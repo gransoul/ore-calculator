@@ -101,14 +101,14 @@ function updateMineralInputsState() {
   });
 }
 
-// Обновлённая функция calculateMaterials с ограничением преобразования по доступным ресурсам
+// Обновлённая функция calculateMaterials с правильным порядком расчёта и ограничением преобразования
 function calculateMaterials() {
   updateMineralInputsState();
   const oreInputs = getOreValues();
   const oreAvailable = { ...oreInputs };
   const oreUsed = {};
 
-  // 2. Преобразование руды / урана в минералы
+  // 1. Преобразование руды / урана в минералы (раньше, чтобы учесть их при производстве)
   document.querySelectorAll(".mineral-input").forEach(input => {
     const row = input.closest("tr");
     const mineralName = row.querySelector("td:nth-child(2)").textContent.trim();
@@ -143,15 +143,16 @@ function calculateMaterials() {
       }
     }
 
+    // Автоматическое ограничение значения в поле
     if (convertedTotal < desired) {
       input.classList.add("red");
+      input.value = formatTrillions(convertedTotal);
     } else {
       input.classList.remove("red");
     }
   });
 
-
-  // 1. Производство материалов
+  // 2. Производство материалов (после преобразования минералов)
   document.querySelectorAll("#right-block .material-output").forEach(output => {
     const row = output.closest("tr");
     const name = row.querySelector("td:nth-child(2)").textContent.trim();
@@ -177,8 +178,6 @@ function calculateMaterials() {
     }
   });
 
-
-
   // 3. Остатки
   document.querySelectorAll(".left-remaining").forEach(span => {
     const name = span.dataset.ore;
@@ -193,48 +192,10 @@ function calculateMaterials() {
   });
 }
 
-// Функция getOreValues — собирает все значения из поля "Количество"
-function getOreValues() {
-  const oreValues = {};
-  document.querySelectorAll(".ore-input").forEach(input => {
-    const row = input.closest("tr");
-    const name = row.querySelector("td:nth-child(2)").textContent.trim();
-    oreValues[name] = parseInputToNumber(input.value);
-  });
-  return oreValues;
-}
-
-
-
-function attachCalcListeners() {
-  document.querySelectorAll(".ore-input, .mineral-input").forEach(input => {
-    input.addEventListener("input", calculateMaterials);
-    input.addEventListener("blur", () => {
-      const parsed = parseInputToNumber(input.value);
-      input.value = (input.disabled ? "-" : formatTrillions(parsed));
-      calculateMaterials();
-    });
-  });
-
-  document.querySelectorAll("select").forEach(select => {
-    select.addEventListener("change", calculateMaterials);
-  });
-
-  document.querySelectorAll(".convert-checkbox").forEach(cb => {
-    cb.addEventListener("change", calculateMaterials);
-  });
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-  attachCalcListeners();
-  calculateMaterials();
-
-  const btn = document.getElementById("clear-remainders");
-  if (btn) btn.addEventListener("click", removeRemainders);
-});
-
-
+// Обновлённая removeRemainders с учётом ограничения доступного количества
 function removeRemainders() {
+  const oreInputs = getOreValues();
+
   document.querySelectorAll(".left-remaining").forEach(span => {
     const name = span.dataset.ore;
     let left = parseInputToNumber(span.textContent);
@@ -261,4 +222,3 @@ function removeRemainders() {
 
   calculateMaterials();
 }
-
