@@ -111,20 +111,16 @@
       "Композиты": { "Полиорганическая руда": 2, "Полиэлементная руда": 1, "Железная руда": 1, "Иридиум": 1, "Митрацит": 1 }
     };
 
-function getOreValues() {
-  const inputs = document.querySelectorAll(".ore-input");
-  const oreValues = {};
-  inputs.forEach(input => {
-    const row = input.closest("tr");
-    const oreName = row.querySelector("td:nth-child(2)").textContent.trim();
-    oreValues[oreName] = {
-      value: parseInputToNumber(input.value),
-      input: input
-    };
-  });
-  return oreValues;
-}
-
+    function getOreValues() {
+      const inputs = document.querySelectorAll(".ore-input");
+      const oreValues = {};
+      inputs.forEach(input => {
+        const row = input.closest("tr");
+        const oreName = row.querySelector("td:nth-child(2)").textContent.trim();
+        oreValues[oreName] = parseInputToNumber(input.value);
+      });
+      return oreValues;
+    }
 
     function getEfficiency(select) {
       const value = select.value.replace('%', '');
@@ -133,7 +129,7 @@ function getOreValues() {
 
 function calculateMaterials() {
   const convertEnabled = document.getElementById("convertToggle").checked;
-  const oreData = getOreValues();
+  const ores = getOreValues();
 
   const baseOres = ["Железная руда", "Полиэлементная руда", "Полиорганическая руда"];
 
@@ -146,25 +142,6 @@ function calculateMaterials() {
     "Титанит": { base: 40, bonus: 0.1 },
   };
 
-  // Предварительная конвертация
-  if (convertEnabled) {
-    for (const [mineral, { base, bonus }] of Object.entries(conversionRules)) {
-      if (!oreData[mineral]) oreData[mineral] = { value: 0, input: null };
-
-      for (const baseOre of baseOres) {
-        const totalCost = base * (1 + bonus);
-        const baseAvailable = oreData[baseOre]?.value || 0;
-        const convertCount = Math.floor(baseAvailable / totalCost);
-        if (convertCount > 0) {
-          oreData[mineral].value += convertCount;
-          oreData[baseOre].value -= convertCount * totalCost;
-          break;
-        }
-      }
-    }
-  }
-
-  // Производство материалов
   document.querySelectorAll("table tbody tr").forEach(row => {
     const nameCell = row.querySelector("td:nth-child(2)");
     const outputCell = row.querySelector(".material-output");
@@ -176,9 +153,36 @@ function calculateMaterials() {
     const recipe = recipes[materialName];
     if (!recipe) return;
 
+    const availableOres = { ...ores };
+
+    // Попробуем компенсировать недостающие минералы
+    if (convertEnabled) {
+      for (const [mineral, { base, bonus }] of Object.entries(conversionRules)) {
+        const requiredAmount = recipe[mineral];
+        if (!requiredAmount) continue;
+
+        const available = availableOres[mineral] || 0;
+        let possibleUnits = Math.floor(available / requiredAmount);
+
+        // Если не хватает — попытаемся сконвертировать из базовых руд
+        if (possibleUnits === 0) {
+          const totalCost = base * (1 + bonus); // с учётом +10%
+          for (const baseOre of baseOres) {
+            const baseAvailable = availableOres[baseOre] || 0;
+            const convertCount = Math.floor(baseAvailable / totalCost);
+            if (convertCount > 0) {
+              availableOres[mineral] = (availableOres[mineral] || 0) + convertCount;
+              availableOres[baseOre] -= convertCount * totalCost;
+              break; // только один тип замены используем
+            }
+          }
+        }
+      }
+    }
+
     let maxOutput = Infinity;
     for (const [oreName, required] of Object.entries(recipe)) {
-      const available = oreData[oreName]?.value || 0;
+      const available = availableOres[oreName] || 0;
       maxOutput = Math.min(maxOutput, Math.floor(available / required));
     }
 
@@ -186,25 +190,8 @@ function calculateMaterials() {
     const result = Math.floor(maxOutput * efficiency);
     outputCell.dataset.raw = result;
     outputCell.textContent = formatTrillions(result);
-
-    // Вычитаем использованную руду
-    for (const [oreName, required] of Object.entries(recipe)) {
-      if (oreData[oreName]) {
-        oreData[oreName].value = required * maxOutput;
-      }
-    }
   });
-
-  // Обновляем значения в input-полях
-  for (const oreName in oreData) {
-    const data = oreData[oreName];
-    if (data.input) {
-      const clean = Math.max(0, Math.floor(data.value));
-      data.input.value = formatTrillions(clean);
-    }
-  }
 }
-
 
     function copyMaterialValue(name, outputSpan) {
       const raw = outputSpan.dataset.raw || "0";
@@ -388,7 +375,7 @@ function calculateMaterials() {
     border-radius: 8px;
     cursor: pointer;
   ">
-    Оптимизировать
+    Рассчитать
   </button>
 </div>
 </html>
