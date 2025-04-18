@@ -15,7 +15,7 @@ h1 {
 .container {
   display: flex;
   gap: 20px;
-  flex-wrap: wrap; /* ← позволяет перенос блоков */
+  flex-wrap: wrap;
   align-items: flex-start;
   padding-bottom: 20px;
 }
@@ -30,14 +30,12 @@ h1 {
   max-width: 100%;
 }
 
-/* Левый блок */
 #left-block {
   flex: 1.3;
   min-width: 600px;
   margin-right: 10px;
 }
 
-/* Правый блок */
 #right-block {
   flex: 1;
   min-width: 500px;
@@ -54,7 +52,7 @@ table {
 
 th, td {
   border: 1px solid #1f3c4d;
-  padding: 8px;
+  padding: 6px; /* уменьшено с 8px */
   text-align: center;
 }
 
@@ -68,7 +66,7 @@ input[type="text"], select {
   background-color: #081c27;
   color: #00f7ff;
   border: 1px solid #1f3c4d;
-  width: 140px;
+  width: 110px; /* уменьшено с 140px */
   text-align: center;
 }
 
@@ -80,61 +78,4 @@ input[type="checkbox"] {
 .material-output {
   color: #00f7ff;
   display: inline-block;
-  width: 100px;
-  text-align: center;
-}
-
-/* Остатки */
-.left-remaining {
-  display: inline-block;
-  width: 100px;
-  text-align: center;
-}
-
-.left-remaining.red {
-  color: #ff4d4d;
-  font-weight: bold;
-}
-
-/* Иконки */
-.icon {
-  width: 16px;
-  height: 16px;
-  vertical-align: middle;
-  margin-right: 6px;
-}
-
-.copy-icon {
-  cursor: pointer;
-  margin-left: 6px;
-}
-
-/* Кнопка (если вернётся) */
-.calculate-button {
-  background-color: #daa548;
-  color: #0b1d2a;
-  border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-/* Ряд с переключателем (удалён, но пусть будет) */
-.toggle-row {
-  background-color: #081c27;
-  border: 1px solid #1f3c4d;
-  padding: 8px;
-  text-align: center;
-  margin-bottom: 10px;
-  color: #daa548;
-}
-
-/* Адаптивность — правый блок уходит под левый */
-@media (max-width: 1100px) {
-  #left-block,
-  #right-block {
-    min-width: 100%;
-    flex: 1 1 100%;
-  }
-}
+  width: 80px; /* уменьшено с 100px */
