@@ -40,6 +40,17 @@ function getEfficiency(select) {
   return parseInt(value, 10) / 100;
 }
 
+function copyRowValue(name, input) {
+  const value = input.value;
+  const parsed = parseInputToNumber(value);
+  navigator.clipboard.writeText(`${formatNumberWithSpaces(parsed)}`);
+}
+
+function copyMaterialValue(name, outputSpan) {
+  const raw = outputSpan.dataset.raw || "0";
+  navigator.clipboard.writeText(`${formatNumberWithSpaces(raw)}`);
+}
+
 const recipes = {
   "Электронные компоненты": { "Железная руда": 1, "Полиэлементная руда": 1, "Крокит": 1 },
   "Алюминий": { "Железная руда": 1, "Полиэлементная руда": 2, "Иридиум": 1 },
@@ -57,58 +68,18 @@ const recipes = {
 };
 
 const conversionRates = {
-  "Железная руда": {
-    "Митрацит": 4.4,
-    "Иридиум": 4.4,
-    "Крокит": 6.6,
-    "Брадий": 22,
-    "Титанит": 44
-  },
-  "Полиэлементная руда": {
-    "Митрацит": 4.4,
-    "Иридиум": 4.4,
-    "Крокит": 6.6,
-    "Брадий": 22,
-    "Титанит": 44
-  },
-  "Полиорганическая руда": {
-    "Митрацит": 4.4,
-    "Иридиум": 4.4,
-    "Крокит": 6.6,
-    "Брадий": 22,
-    "Титанит": 44
-  },
-  "Уран": {
-    "Митрацит": 2.2,
-    "Иридиум": 2.2,
-    "Крокит": 3.3,
-    "Брадий": 11,
-    "Титанит": 22
-  }
+  "Железная руда": { "Митрацит": 4.4, "Иридиум": 4.4, "Крокит": 6.6, "Брадий": 22, "Титанит": 44 },
+  "Полиэлементная руда": { "Митрацит": 4.4, "Иридиум": 4.4, "Крокит": 6.6, "Брадий": 22, "Титанит": 44 },
+  "Полиорганическая руда": { "Митрацит": 4.4, "Иридиум": 4.4, "Крокит": 6.6, "Брадий": 22, "Титанит": 44 },
+  "Уран": { "Митрацит": 2.2, "Иридиум": 2.2, "Крокит": 3.3, "Брадий": 11, "Титанит": 22 }
 };
-
-
-function copyRowValue(name, input) {
-  const value = input.value;
-  const parsed = parseInputToNumber(value);
-  const text = `${formatNumberWithSpaces(parsed)}`;
-  navigator.clipboard.writeText(text);
-}
-
-function copyMaterialValue(name, outputSpan) {
-  const raw = outputSpan.dataset.raw || "0";
-  const text = `${formatNumberWithSpaces(raw)}`;
-  navigator.clipboard.writeText(text);
-}
-
-
 
 function calculateMaterials() {
   const oreInputs = getOreValues();
   const oreAvailable = { ...oreInputs };
   const oreUsed = {};
-  const outputValues = {};
 
+  // 1. Производство материалов
   document.querySelectorAll("#right-block .material-output").forEach(output => {
     const row = output.closest("tr");
     const name = row.querySelector("td:nth-child(2)").textContent.trim();
@@ -127,7 +98,7 @@ function calculateMaterials() {
     const result = Math.floor(maxPossible * efficiency);
     output.dataset.raw = result;
     output.textContent = formatTrillions(result);
-    
+
     // Вычитаем использованное
     for (const [res, amount] of Object.entries(recipe)) {
       const used = amount * maxPossible;
@@ -136,16 +107,17 @@ function calculateMaterials() {
     }
   });
 
-  // Преобразование руды в минералы (вручную)
+  // 2. Преобразование руды / урана в минералы
   document.querySelectorAll(".mineral-input").forEach(input => {
     const row = input.closest("tr");
-    const name = row.querySelector("td:nth-child(2)").textContent.trim();
+    const mineralName = row.querySelector("td:nth-child(2)").textContent.trim();
     const desired = parseInputToNumber(input.value);
     let remaining = desired;
 
+    // Преобразование из руды
     for (const checkbox of document.querySelectorAll(".convert-checkbox:checked")) {
       const base = checkbox.dataset.ore;
-      const rate = conversionRates[base]?.[name];
+      const rate = conversionRates[base]?.[mineralName];
       if (!rate || oreAvailable[base] <= 0 || remaining <= 0) continue;
 
       const possible = Math.floor(oreAvailable[base] / rate);
@@ -155,7 +127,8 @@ function calculateMaterials() {
       remaining -= toConvert;
     }
 
-    const uraniumRate = conversionRates["Уран"]?.[name];
+    // Преобразование из урана
+    const uraniumRate = conversionRates["Уран"]?.[mineralName];
     if (uraniumRate && oreAvailable["Уран"] > 0 && remaining > 0) {
       const possible = Math.floor(oreAvailable["Уран"] / uraniumRate);
       const toConvert = Math.min(possible, remaining);
@@ -164,6 +137,7 @@ function calculateMaterials() {
       remaining -= toConvert;
     }
 
+    // Подсветка
     if (remaining > 0) {
       input.classList.add("red");
     } else {
@@ -171,7 +145,7 @@ function calculateMaterials() {
     }
   });
 
-  // Обновляем остатки
+  // 3. Остатки
   document.querySelectorAll(".left-remaining").forEach(span => {
     const name = span.dataset.ore;
     const left = Math.floor(oreAvailable[name] || 0);
