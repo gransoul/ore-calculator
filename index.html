@@ -131,7 +131,8 @@ function calculateMaterials() {
   const convertEnabled = document.getElementById("convertToggle").checked;
   const ores = getOreValues();
 
-  const baseOresList = ["Железная руда", "Полиэлементная руда", "Полиорганическая руда"];
+  const baseOres = ["Железная руда", "Полиэлементная руда", "Полиорганическая руда"];
+
   const conversionRules = {
     "Уран": { base: 4, bonus: 0.1 },
     "Митрацит": { base: 4, bonus: 0.1 },
@@ -141,90 +142,43 @@ function calculateMaterials() {
     "Титанит": { base: 40, bonus: 0.1 },
   };
 
-  const materialRows = Array.from(document.querySelectorAll("table tbody tr"))
-    .map(row => {
-      const nameCell = row.querySelector("td:nth-child(2)");
-      const output = row.querySelector(".material-output");
-      const select = row.querySelector("select");
-      if (!nameCell || !output || !select) return null;
+  document.querySelectorAll("table tbody tr").forEach(row => {
+    const nameCell = row.querySelector("td:nth-child(2)");
+    const outputCell = row.querySelector(".material-output");
+    const select = row.querySelector("select");
 
-      return {
-        row,
-        name: nameCell.textContent.trim(),
-        output,
-        select,
-        percent: parseInt(select.value.replace('%', '')) || 0,
-        recipe: recipes[nameCell.textContent.trim()]
-      };
-    })
-    .filter(Boolean)
-    .filter(m => m.recipe);
+    if (!nameCell || !outputCell || !select) return;
 
-  if (!convertEnabled) {
-    // Классическая логика: расчёт по доступным ресурсам
-    materialRows.forEach(({ recipe, select, output }) => {
-      let maxOutput = Infinity;
-      for (const [oreName, required] of Object.entries(recipe)) {
-        const available = ores[oreName] || 0;
-        maxOutput = Math.min(maxOutput, Math.floor(available / required));
-      }
-      const efficiency = getEfficiency(select);
-      const result = Math.floor(maxOutput * efficiency);
-      output.dataset.raw = result;
-      output.textContent = formatTrillions(result);
-    });
-    return;
-  }
+    const materialName = nameCell.textContent.trim();
+    const recipe = recipes[materialName];
+    if (!recipe) return;
 
-  // Распределение базовой руды
-  const active = materialRows.filter(m => m.percent > 0);
-  const totalPercent = active.reduce((sum, m) => sum + m.percent, 0);
+    const availableOres = { ...ores };
 
-  const baseOrePool = baseOresList.reduce((sum, ore) => sum + (ores[ore] || 0), 0);
-  if (totalPercent === 0 || baseOrePool === 0) {
-    materialRows.forEach(({ output }) => {
-      output.dataset.raw = 0;
-      output.textContent = "0";
-    });
-    return;
-  }
+    // Попробуем компенсировать недостающие минералы
+    if (convertEnabled) {
+      for (const [mineral, { base, bonus }] of Object.entries(conversionRules)) {
+        const requiredAmount = recipe[mineral];
+        if (!requiredAmount) continue;
 
-  active.forEach(({ recipe, name, percent, output }) => {
-    const oreCopy = JSON.parse(JSON.stringify(ores));
-    let allocatedOre = (percent / totalPercent) * baseOrePool;
+        const available = availableOres[mineral] || 0;
+        let possibleUnits = Math.floor(available / requiredAmount);
 
-    // Попробуем синтезировать недостающие минералы, если нужно
-    for (const [oreName, required] of Object.entries(recipe)) {
-      const available = oreCopy[oreName] || 0;
-
-      if (required > 0 && available < 999999999) { // немного фейлсейф, чтобы не падало
-        const conversion = conversionRules[oreName];
-        if (conversion && available < required * 10000) {
-          // сколько нужно
-          const shortage = Math.max(0, required * 10000 - available); // запас с запасом
-          const unitsToCreate = shortage;
-          const costPerUnit = conversion.base * (1 + conversion.bonus);
-          const totalCost = unitsToCreate * costPerUnit;
-
-          if (allocatedOre >= totalCost) {
-            oreCopy[oreName] = (oreCopy[oreName] || 0) + unitsToCreate;
-            allocatedOre -= totalCost;
+        // Если не хватает — попытаемся сконвертировать из базовых руд
+        if (possibleUnits === 0) {
+          const totalCost = base * (1 + bonus); // с учётом +10%
+          for (const baseOre of baseOres) {
+            const baseAvailable = availableOres[baseOre] || 0;
+            const convertCount = Math.floor(baseAvailable / totalCost);
+            if (convertCount > 0) {
+              availableOres[mineral] = (availableOres[mineral] || 0) + convertCount;
+              availableOres[baseOre] -= convertCount * totalCost;
+              break; // только один тип замены используем
+            }
           }
         }
       }
     }
-
-    // Теперь считаем, сколько можно произвести
-    let maxOutput = Infinity;
-    for (const [oreName, required] of Object.entries(recipe)) {
-      const available = oreCopy[oreName] || 0;
-      maxOutput = Math.min(maxOutput, Math.floor(available / required));
-    }
-
-    output.dataset.raw = maxOutput;
-    output.textContent = formatTrillions(maxOutput);
-  });
-}
 
     let maxOutput = Infinity;
     for (const [oreName, required] of Object.entries(recipe)) {
@@ -266,14 +220,8 @@ function calculateMaterials() {
       function updateSelectsState() {
         selects.forEach(select => {
           select.disabled = !toggle.checked;
-          if (toggle.checked) {
-            select.value = "0%";
-          } else {
-            select.value = "100%";
-          }
         });
       }
-
 
       toggle.addEventListener("change", updateSelectsState);
       updateSelectsState();
@@ -417,4 +365,17 @@ function calculateMaterials() {
     </div>
   </div>
 </body>
+<div style="text-align: center; margin-top: 20px;">
+  <button onclick="calculateMaterials()" style="
+    background-color: #daa548;
+    color: #0b1d2a;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+  ">
+    Рассчитать
+  </button>
+</div>
 </html>
