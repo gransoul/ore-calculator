@@ -163,13 +163,20 @@ function formatLeftInputs() {
   });
 }
 
-// Включение/отключение полей минералов
+// ✅ Исправлено: включение минералов только по нужным чекбоксам
 function updateMineralInputsState() {
-  const checkboxes = document.querySelectorAll(".convert-checkbox");
+  const checkboxes = document.querySelectorAll(
+    '.convert-checkbox[data-ore="Железная руда"], ' +
+    '.convert-checkbox[data-ore="Полиэлементная руда"], ' +
+    '.convert-checkbox[data-ore="Полиорганическая руда"]'
+  );
   const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
-  document.querySelectorAll(".mineral-input").forEach(input => {
-    input.disabled = !anyChecked;
-  });
+
+  setTimeout(() => {
+    document.querySelectorAll(".mineral-input").forEach(input => {
+      input.disabled = !anyChecked;
+    });
+  }, 10);
 }
 
 // Обработчики событий
@@ -191,7 +198,7 @@ function attachCalcListeners() {
   document.querySelectorAll(".convert-checkbox").forEach(cb => {
     cb.addEventListener("change", () => {
       calculateMaterials();
-      updateMineralInputsState();
+      updateMineralInputsState(); // ← важный вызов
     });
   });
 
