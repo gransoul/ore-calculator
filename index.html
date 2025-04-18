@@ -98,9 +98,7 @@
       const value = input.value;
       const parsed = parseInputToNumber(value);
       const text = `${name}: ${formatNumberWithSpaces(parsed)} шт.`;
-      navigator.clipboard.writeText(text).then(() => {
-        alert(`Скопировано: ${text}`);
-      });
+      navigator.clipboard.writeText(text); // Удалён alert
     }
 
     document.addEventListener("DOMContentLoaded", function() {
