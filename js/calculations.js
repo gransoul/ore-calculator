@@ -74,7 +74,23 @@ const conversionRates = {
   "Уран": { "Митрацит": 2.2, "Иридиум": 2.2, "Крокит": 3.3, "Брадий": 11, "Титанит": 22 }
 };
 
+function updateMineralInputsState() {
+  const anyChecked = Array.from(document.querySelectorAll(".convert-checkbox"))
+    .some(cb => cb.checked);
+
+  document.querySelectorAll(".mineral-input").forEach(input => {
+    if (anyChecked) {
+      input.disabled = false;
+      if (input.value === "-" || input.value === "") input.value = "0";
+    } else {
+      input.value = "-";
+      input.disabled = true;
+    }
+  });
+}
+
 function calculateMaterials() {
+  updateMineralInputsState();
   const oreInputs = getOreValues();
   const oreAvailable = { ...oreInputs };
   const oreUsed = {};
@@ -86,7 +102,6 @@ function calculateMaterials() {
     const recipe = recipes[name];
     const select = row.querySelector("select");
     const efficiency = getEfficiency(select);
-
     if (!recipe) return;
 
     let maxPossible = Infinity;
@@ -99,7 +114,6 @@ function calculateMaterials() {
     output.dataset.raw = result;
     output.textContent = formatTrillions(result);
 
-    // Вычитаем использованное
     for (const [res, amount] of Object.entries(recipe)) {
       const used = amount * maxPossible;
       oreUsed[res] = (oreUsed[res] || 0) + used;
@@ -114,7 +128,6 @@ function calculateMaterials() {
     const desired = parseInputToNumber(input.value);
     let remaining = desired;
 
-    // Преобразование из руды
     for (const checkbox of document.querySelectorAll(".convert-checkbox:checked")) {
       const base = checkbox.dataset.ore;
       const rate = conversionRates[base]?.[mineralName];
@@ -127,7 +140,6 @@ function calculateMaterials() {
       remaining -= toConvert;
     }
 
-    // Преобразование из урана
     const uraniumRate = conversionRates["Уран"]?.[mineralName];
     if (uraniumRate && oreAvailable["Уран"] > 0 && remaining > 0) {
       const possible = Math.floor(oreAvailable["Уран"] / uraniumRate);
@@ -137,12 +149,8 @@ function calculateMaterials() {
       remaining -= toConvert;
     }
 
-    // Подсветка
-    if (remaining > 0) {
-      input.classList.add("red");
-    } else {
-      input.classList.remove("red");
-    }
+    if (remaining > 0) input.classList.add("red");
+    else input.classList.remove("red");
   });
 
   // 3. Остатки
@@ -159,24 +167,9 @@ function calculateMaterials() {
   });
 }
 
-calculateMaterials();
-
 function attachCalcListeners() {
-  document.querySelectorAll(".ore-input").forEach(input => {
-    input.addEventListener("input", () => {
-      calculateMaterials();
-    });
-    input.addEventListener("blur", () => {
-      const parsed = parseInputToNumber(input.value);
-      input.value = formatTrillions(parsed);
-      calculateMaterials();
-    });
-  });
-
-  document.querySelectorAll(".mineral-input").forEach(input => {
-    input.addEventListener("input", () => {
-      calculateMaterials();
-    });
+  document.querySelectorAll(".ore-input, .mineral-input").forEach(input => {
+    input.addEventListener("input", calculateMaterials);
     input.addEventListener("blur", () => {
       const parsed = parseInputToNumber(input.value);
       input.value = (input.disabled ? "-" : formatTrillions(parsed));
@@ -189,15 +182,11 @@ function attachCalcListeners() {
   });
 
   document.querySelectorAll(".convert-checkbox").forEach(cb => {
-    cb.addEventListener("change", () => {
-      calculateMaterials();
-    });
+    cb.addEventListener("change", calculateMaterials);
   });
 }
 
-// Подключение после загрузки страницы
 document.addEventListener("DOMContentLoaded", function () {
   attachCalcListeners();
   calculateMaterials();
 });
-
