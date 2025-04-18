@@ -56,19 +56,28 @@
       </td>
     </tr>
 
-    <!-- Уран -->
-    <tr>
-      <td><img class="icon" src="images/productions/4-16.png"></td>
-      <td>Уран</td>
-      <td>
-        <input class="ore-input" type="text" value="0">
-        <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Уран', this.previousElementSibling)">
-      </td>
-      <td></td>
-      <td>
-        <span class="left-remaining" data-ore="Уран">-</span>
-      </td>
-    </tr>
+<!-- Уран -->
+<tr>
+  <td><img class="icon" src="images/productions/4-16.png"></td>
+  <td>Уран</td>
+  <td>
+    <input class="ore-input" type="text" value="0">
+    <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Уран', this.previousElementSibling)">
+  </td>
+  <td>
+    <input type="checkbox" class="convert-checkbox" data-ore="Уран">
+  </td>
+  <td>
+    <span class="left-remaining" data-ore="Уран">-</span>
+  </td>
+</tr>
+
+<!-- Пустая строка под Ураном -->
+<tr>
+  <td colspan="5">
+    <div style="height: 12px; width: 50%; margin: auto;"></div>
+  </td>
+</tr>
 
     <!-- Митрацит -->
     <tr>
