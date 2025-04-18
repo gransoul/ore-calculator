@@ -101,18 +101,12 @@ function updateMineralInputsState() {
   });
 }
 
-// Обновлённая функция calculateMaterials с учётом использования минералов из поля "Количество"
+// Обновлённая функция calculateMaterials с ограничением преобразования по доступным ресурсам
 function calculateMaterials() {
   updateMineralInputsState();
   const oreInputs = getOreValues();
   const oreAvailable = { ...oreInputs };
   const oreUsed = {};
-
-  const mineralNames = ["Митрацит", "Иридиум", "Крокит", "Брадий", "Титанит"];
-  const mineralsAvailable = {};
-  mineralNames.forEach(name => {
-    mineralsAvailable[name] = oreAvailable[name] || 0;
-  });
 
   // 1. Производство материалов
   document.querySelectorAll("#right-block .material-output").forEach(output => {
@@ -125,10 +119,7 @@ function calculateMaterials() {
 
     let maxPossible = Infinity;
     for (const [res, amount] of Object.entries(recipe)) {
-      const available =
-        oreAvailable[res] !== undefined
-          ? oreAvailable[res]
-          : mineralsAvailable[res] || 0;
+      const available = oreAvailable[res] || 0;
       maxPossible = Math.min(maxPossible, Math.floor(available / amount));
     }
 
@@ -139,12 +130,7 @@ function calculateMaterials() {
     for (const [res, amount] of Object.entries(recipe)) {
       const used = amount * maxPossible;
       oreUsed[res] = (oreUsed[res] || 0) + used;
-
-      if (oreAvailable[res] !== undefined) {
-        oreAvailable[res] -= used;
-      } else if (mineralsAvailable[res] !== undefined) {
-        mineralsAvailable[res] -= used;
-      }
+      oreAvailable[res] -= used;
     }
   });
 
@@ -154,6 +140,7 @@ function calculateMaterials() {
     const mineralName = row.querySelector("td:nth-child(2)").textContent.trim();
     const desired = parseInputToNumber(input.value);
     let remaining = desired;
+    let convertedTotal = 0;
 
     for (const checkbox of document.querySelectorAll(".convert-checkbox:checked")) {
       const base = checkbox.dataset.ore;
@@ -162,22 +149,31 @@ function calculateMaterials() {
 
       const possible = Math.floor(oreAvailable[base] / rate);
       const toConvert = Math.min(possible, remaining);
-      oreUsed[base] = (oreUsed[base] || 0) + toConvert * rate;
-      oreAvailable[base] -= toConvert * rate;
-      remaining -= toConvert;
+      if (toConvert > 0) {
+        oreUsed[base] = (oreUsed[base] || 0) + toConvert * rate;
+        oreAvailable[base] -= toConvert * rate;
+        convertedTotal += toConvert;
+        remaining -= toConvert;
+      }
     }
 
     const uraniumRate = conversionRates["Уран"]?.[mineralName];
     if (uraniumRate && oreAvailable["Уран"] > 0 && remaining > 0) {
       const possible = Math.floor(oreAvailable["Уран"] / uraniumRate);
       const toConvert = Math.min(possible, remaining);
-      oreUsed["Уран"] = (oreUsed["Уран"] || 0) + toConvert * uraniumRate;
-      oreAvailable["Уран"] -= toConvert * uraniumRate;
-      remaining -= toConvert;
+      if (toConvert > 0) {
+        oreUsed["Уран"] = (oreUsed["Уран"] || 0) + toConvert * uraniumRate;
+        oreAvailable["Уран"] -= toConvert * uraniumRate;
+        convertedTotal += toConvert;
+        remaining -= toConvert;
+      }
     }
 
-    if (remaining > 0) input.classList.add("red");
-    else input.classList.remove("red");
+    if (convertedTotal < desired) {
+      input.classList.add("red");
+    } else {
+      input.classList.remove("red");
+    }
   });
 
   // 3. Остатки
@@ -194,18 +190,17 @@ function calculateMaterials() {
   });
 }
 
-// Обновлённая функция getOreValues — минералы всегда участвуют в расчётах
+// Функция getOreValues — собирает все значения из поля "Количество"
 function getOreValues() {
   const oreValues = {};
-
   document.querySelectorAll(".ore-input").forEach(input => {
     const row = input.closest("tr");
     const name = row.querySelector("td:nth-child(2)").textContent.trim();
     oreValues[name] = parseInputToNumber(input.value);
   });
-
   return oreValues;
 }
+
 
 
 function attachCalcListeners() {
