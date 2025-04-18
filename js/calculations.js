@@ -108,32 +108,6 @@ function calculateMaterials() {
   const oreAvailable = { ...oreInputs };
   const oreUsed = {};
 
-  // 1. Производство материалов
-  document.querySelectorAll("#right-block .material-output").forEach(output => {
-    const row = output.closest("tr");
-    const name = row.querySelector("td:nth-child(2)").textContent.trim();
-    const recipe = recipes[name];
-    const select = row.querySelector("select");
-    const efficiency = getEfficiency(select);
-    if (!recipe) return;
-
-    let maxPossible = Infinity;
-    for (const [res, amount] of Object.entries(recipe)) {
-      const available = oreAvailable[res] || 0;
-      maxPossible = Math.min(maxPossible, Math.floor(available / amount));
-    }
-
-    const result = Math.floor(maxPossible * efficiency);
-    output.dataset.raw = result;
-    output.textContent = formatTrillions(result);
-
-    for (const [res, amount] of Object.entries(recipe)) {
-      const used = amount * maxPossible;
-      oreUsed[res] = (oreUsed[res] || 0) + used;
-      oreAvailable[res] -= used;
-    }
-  });
-
   // 2. Преобразование руды / урана в минералы
   document.querySelectorAll(".mineral-input").forEach(input => {
     const row = input.closest("tr");
@@ -175,6 +149,35 @@ function calculateMaterials() {
       input.classList.remove("red");
     }
   });
+
+
+  // 1. Производство материалов
+  document.querySelectorAll("#right-block .material-output").forEach(output => {
+    const row = output.closest("tr");
+    const name = row.querySelector("td:nth-child(2)").textContent.trim();
+    const recipe = recipes[name];
+    const select = row.querySelector("select");
+    const efficiency = getEfficiency(select);
+    if (!recipe) return;
+
+    let maxPossible = Infinity;
+    for (const [res, amount] of Object.entries(recipe)) {
+      const available = oreAvailable[res] || 0;
+      maxPossible = Math.min(maxPossible, Math.floor(available / amount));
+    }
+
+    const result = Math.floor(maxPossible * efficiency);
+    output.dataset.raw = result;
+    output.textContent = formatTrillions(result);
+
+    for (const [res, amount] of Object.entries(recipe)) {
+      const used = amount * maxPossible;
+      oreUsed[res] = (oreUsed[res] || 0) + used;
+      oreAvailable[res] -= used;
+    }
+  });
+
+
 
   // 3. Остатки
   document.querySelectorAll(".left-remaining").forEach(span => {
