@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Калькулятор руды</title>
+  <title>Калькулятор материалов из руды</title>
   <style>
     body {
       background-color: #0b1d2a;
@@ -54,105 +54,100 @@
   </style>
 </head>
 <body>
-  <h1>Калькулятор руды</h1>
+  <h1>Калькулятор материалов из руды</h1>
 
   <table>
     <thead>
       <tr>
-        <th>Руда</th>
+        <th>Количество руды</th>
         <th>Материал</th>
         <th>Минералов на 1 шт</th>
-        <th>Количество</th>
+        <th>Можно создать</th>
       </tr>
     </thead>
     <tbody id="material-table">
       <tr>
-        <td class="ore-cell">0</td>
+        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
         <td class="material-name"><img class="icon" src="images/productions/32-16.png">Электронные компоненты</td>
         <td class="mineral">3</td>
-        <td><input type="number" min="0" value="0" onchange="calculateOre()"></td>
+        <td class="result-cell">0</td>
       </tr>
       <tr>
-        <td class="ore-cell">0</td>
+        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
         <td class="material-name"><img class="icon" src="images/productions/48-16.png">Титановый сплав</td>
         <td class="mineral">4</td>
-        <td><input type="number" min="0" value="0" onchange="calculateOre()"></td>
+        <td class="result-cell">0</td>
       </tr>
       <tr>
-        <td class="ore-cell">0</td>
+        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
         <td class="material-name"><img class="icon" src="images/productions/1-16.png">Железная руда</td>
         <td class="mineral">1</td>
-        <td><input type="number" min="0" value="0" onchange="calculateOre()"></td>
+        <td class="result-cell">0</td>
       </tr>
       <tr>
-        <td class="ore-cell">0</td>
+        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
         <td class="material-name"><img class="icon" src="images/productions/2-16.png">Полиэлементная руда</td>
         <td class="mineral">1</td>
-        <td><input type="number" min="0" value="0" onchange="calculateOre()"></td>
+        <td class="result-cell">0</td>
       </tr>
       <tr>
-        <td class="ore-cell">0</td>
+        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
         <td class="material-name"><img class="icon" src="images/productions/3-16.png">Полиорганическая руда</td>
         <td class="mineral">1</td>
-        <td><input type="number" min="0" value="0" onchange="calculateOre()"></td>
+        <td class="result-cell">0</td>
       </tr>
       <tr>
-        <td class="ore-cell">0</td>
+        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
         <td class="material-name"><img class="icon" src="images/productions/4-16.png">Уран</td>
         <td class="mineral">1</td>
-        <td><input type="number" min="0" value="0" onchange="calculateOre()"></td>
+        <td class="result-cell">0</td>
       </tr>
       <tr>
-        <td class="ore-cell">0</td>
+        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
         <td class="material-name"><img class="icon" src="images/productions/5-16.png">Митрацит</td>
         <td class="mineral">1</td>
-        <td><input type="number" min="0" value="0" onchange="calculateOre()"></td>
+        <td class="result-cell">0</td>
       </tr>
       <tr>
-        <td class="ore-cell">0</td>
+        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
         <td class="material-name"><img class="icon" src="images/productions/6-16.png">Иридиум</td>
         <td class="mineral">1</td>
-        <td><input type="number" min="0" value="0" onchange="calculateOre()"></td>
+        <td class="result-cell">0</td>
       </tr>
       <tr>
-        <td class="ore-cell">0</td>
+        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
         <td class="material-name"><img class="icon" src="images/productions/7-16.png">Крокит</td>
         <td class="mineral">1</td>
-        <td><input type="number" min="0" value="0" onchange="calculateOre()"></td>
+        <td class="result-cell">0</td>
       </tr>
       <tr>
-        <td class="ore-cell">0</td>
+        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
         <td class="material-name"><img class="icon" src="images/productions/8-16.png">Брадий</td>
         <td class="mineral">1</td>
-        <td><input type="number" min="0" value="0" onchange="calculateOre()"></td>
+        <td class="result-cell">0</td>
       </tr>
       <tr>
-        <td class="ore-cell">0</td>
+        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
         <td class="material-name"><img class="icon" src="images/productions/9-16.png">Титанит</td>
         <td class="mineral">1</td>
-        <td><input type="number" min="0" value="0" onchange="calculateOre()"></td>
+        <td class="result-cell">0</td>
       </tr>
     </tbody>
   </table>
 
-  <div class="total" id="total-ore">Суммарная руда: 0</div>
-
   <script>
-    function calculateOre() {
-      const table = document.getElementById('material-table');
-      let totalOre = 0;
+    function calculateMaterials(input) {
+      const row = input.closest('tr');
+      const ore = parseFloat(input.value);
+      const mineralsPerItem = parseFloat(row.querySelector('.mineral').textContent);
 
-      for (let row of table.rows) {
-        const mineralsPerUnit = parseFloat(row.querySelector('.mineral').textContent);
-        const quantity = parseInt(row.querySelector('input').value);
-        const totalMinerals = mineralsPerUnit * quantity;
-        const ore = Math.ceil(totalMinerals * 4 * 1.1);
-
-        row.querySelector('.ore-cell').textContent = ore;
-        totalOre += ore;
+      if (!isNaN(ore) && mineralsPerItem > 0) {
+        const minerals = ore / 1.1 / 4;
+        const count = Math.floor(minerals / mineralsPerItem);
+        row.querySelector('.result-cell').textContent = count;
+      } else {
+        row.querySelector('.result-cell').textContent = 0;
       }
-
-      document.getElementById('total-ore').textContent = 'Суммарная руда: ' + totalOre;
     }
   </script>
 </body>
