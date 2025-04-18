@@ -25,14 +25,12 @@ function formatTrillions(value) {
 function copyRowValue(name, input) {
   const value = input.value;
   const parsed = parseInputToNumber(value);
-  const text = `${name}: ${formatNumberWithSpaces(parsed)} шт.`;
-  navigator.clipboard.writeText(text);
+  navigator.clipboard.writeText(`${formatNumberWithSpaces(parsed)}`);
 }
 
 function copyMaterialValue(name, outputSpan) {
   const raw = outputSpan.dataset.raw || "0";
-  const text = `${name}: ${formatNumberWithSpaces(raw)} шт.`;
-  navigator.clipboard.writeText(text);
+  navigator.clipboard.writeText(`${formatNumberWithSpaces(raw)}`);
 }
 
 function getOreValues() {
