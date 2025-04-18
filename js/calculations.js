@@ -1,3 +1,4 @@
+
 function formatNumberWithSpaces(value) {
   const str = value.toString().replace(/\D/g, '');
   return str.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
@@ -20,17 +21,6 @@ function formatTrillions(value) {
     return result + ' трлн';
   }
   return formatNumberWithSpaces(num);
-}
-
-function copyRowValue(name, input) {
-  const value = input.value;
-  const parsed = parseInputToNumber(value);
-  navigator.clipboard.writeText(`${formatNumberWithSpaces(parsed)}`);
-}
-
-function copyMaterialValue(name, outputSpan) {
-  const raw = outputSpan.dataset.raw || "0";
-  navigator.clipboard.writeText(`${formatNumberWithSpaces(raw)}`);
 }
 
 function getOreValues() {
@@ -66,35 +56,59 @@ const recipes = {
   }
 };
 
-const conversionRules = {
-  "Уран": { base: 4, bonus: 0.1 },
-  "Митрацит": { base: 4, bonus: 0.1 },
-  "Иридиум": { base: 4, bonus: 0.1 },
-  "Крокит": { base: 6, bonus: 0.1 },
-  "Брадий": { base: 20, bonus: 0.1 },
-  "Титанит": { base: 40, bonus: 0.1 },
+const conversionRates = {
+  "Железная руда": {
+    "Митрацит": 4.4,
+    "Иридиум": 4.4,
+    "Крокит": 6.6,
+    "Брадий": 22,
+    "Титанит": 44
+  },
+  "Полиэлементная руда": {
+    "Митрацит": 4.4,
+    "Иридиум": 4.4,
+    "Крокит": 6.6,
+    "Брадий": 22,
+    "Титанит": 44
+  },
+  "Полиорганическая руда": {
+    "Митрацит": 4.4,
+    "Иридиум": 4.4,
+    "Крокит": 6.6,
+    "Брадий": 22,
+    "Титанит": 44
+  },
+  "Уран": {
+    "Митрацит": 2.2,
+    "Иридиум": 2.2,
+    "Крокит": 3.3,
+    "Брадий": 11,
+    "Титанит": 22
+  }
 };
 
+
+function copyRowValue(name, input) {
+  const value = input.value;
+  const parsed = parseInputToNumber(value);
+  const text = `${formatNumberWithSpaces(parsed)}`;
+  navigator.clipboard.writeText(text);
+}
+
+function copyMaterialValue(name, outputSpan) {
+  const raw = outputSpan.dataset.raw || "0";
+  const text = `${formatNumberWithSpaces(raw)}`;
+  navigator.clipboard.writeText(text);
+}
+
+
+
 function calculateMaterials() {
-  const ores = getOreValues();
-  const baseOres = ["Железная руда", "Полиэлементная руда", "Полиорганическая руда"];
-  const availableOres = { ...ores };
+  const oreInputs = getOreValues();
+  const oreAvailable = { ...oreInputs };
+  const oreUsed = {};
+  const outputValues = {};
 
-  for (const [mineral, { base, bonus }] of Object.entries(conversionRules)) {
-    const requiredPerUnit = base * (1 + bonus);
-
-    for (const baseOre of baseOres) {
-      const baseAvailable = availableOres[baseOre] || 0;
-      const convertCount = Math.floor(baseAvailable / requiredPerUnit);
-      if (convertCount > 0) {
-        availableOres[mineral] = (availableOres[mineral] || 0) + convertCount;
-        availableOres[baseOre] -= convertCount * requiredPerUnit;
-        break;
-      }
-    }
-  }
-
-  // Правый блок — материалы
   document.querySelectorAll("#right-block .material-output").forEach(output => {
     const row = output.closest("tr");
     const name = row.querySelector("td:nth-child(2)").textContent.trim();
@@ -104,21 +118,63 @@ function calculateMaterials() {
 
     if (!recipe) return;
 
-    let maxOutput = Infinity;
-    for (const [ore, required] of Object.entries(recipe)) {
-      const available = availableOres[ore] || 0;
-      maxOutput = Math.min(maxOutput, Math.floor(available / required));
+    let maxPossible = Infinity;
+    for (const [res, amount] of Object.entries(recipe)) {
+      const available = oreAvailable[res] || 0;
+      maxPossible = Math.min(maxPossible, Math.floor(available / amount));
     }
 
-    const result = Math.floor(maxOutput * efficiency);
+    const result = Math.floor(maxPossible * efficiency);
     output.dataset.raw = result;
     output.textContent = formatTrillions(result);
+    
+    // Вычитаем использованное
+    for (const [res, amount] of Object.entries(recipe)) {
+      const used = amount * maxPossible;
+      oreUsed[res] = (oreUsed[res] || 0) + used;
+      oreAvailable[res] -= used;
+    }
   });
 
-  // Остатки
-  document.querySelectorAll("#left-block .left-remaining").forEach(span => {
+  // Преобразование руды в минералы (вручную)
+  document.querySelectorAll(".mineral-input").forEach(input => {
+    const row = input.closest("tr");
+    const name = row.querySelector("td:nth-child(2)").textContent.trim();
+    const desired = parseInputToNumber(input.value);
+    let remaining = desired;
+
+    for (const checkbox of document.querySelectorAll(".convert-checkbox:checked")) {
+      const base = checkbox.dataset.ore;
+      const rate = conversionRates[base]?.[name];
+      if (!rate || oreAvailable[base] <= 0 || remaining <= 0) continue;
+
+      const possible = Math.floor(oreAvailable[base] / rate);
+      const toConvert = Math.min(possible, remaining);
+      oreUsed[base] = (oreUsed[base] || 0) + toConvert * rate;
+      oreAvailable[base] -= toConvert * rate;
+      remaining -= toConvert;
+    }
+
+    const uraniumRate = conversionRates["Уран"]?.[name];
+    if (uraniumRate && oreAvailable["Уран"] > 0 && remaining > 0) {
+      const possible = Math.floor(oreAvailable["Уран"] / uraniumRate);
+      const toConvert = Math.min(possible, remaining);
+      oreUsed["Уран"] = (oreUsed["Уран"] || 0) + toConvert * uraniumRate;
+      oreAvailable["Уран"] -= toConvert * uraniumRate;
+      remaining -= toConvert;
+    }
+
+    if (remaining > 0) {
+      input.classList.add("red");
+    } else {
+      input.classList.remove("red");
+    }
+  });
+
+  // Обновляем остатки
+  document.querySelectorAll(".left-remaining").forEach(span => {
     const name = span.dataset.ore;
-    const left = Math.floor(availableOres[name] || 0);
+    const left = Math.floor(oreAvailable[name] || 0);
     if (left > 0) {
       span.textContent = formatTrillions(left);
       span.classList.add("red");
@@ -129,73 +185,4 @@ function calculateMaterials() {
   });
 }
 
-function formatLeftInputs() {
-  document.querySelectorAll(".ore-input, .mineral-input").forEach(input => {
-    let lastRawValue = input.value;
-
-    input.addEventListener("focus", () => {
-      input.value = lastRawValue;
-    });
-
-    input.addEventListener("input", () => {
-      lastRawValue = input.value;
-    });
-
-    input.addEventListener("blur", () => {
-      const parsed = parseInputToNumber(input.value);
-      lastRawValue = formatTrillions(parsed);
-      input.value = lastRawValue;
-    });
-
-    const parsed = parseInputToNumber(input.value);
-    input.value = formatTrillions(parsed);
-  });
-}
-
-function updateMineralInputsState() {
-  const checkboxes = document.querySelectorAll(
-    '.convert-checkbox[data-ore="Железная руда"], ' +
-    '.convert-checkbox[data-ore="Полиэлементная руда"], ' +
-    '.convert-checkbox[data-ore="Полиорганическая руда"]'
-  );
-  const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
-
-  setTimeout(() => {
-    document.querySelectorAll(".mineral-input").forEach(input => {
-      if (anyChecked) {
-        input.disabled = false;
-        if (input.value.trim() === '-' || input.value.trim() === '') {
-          input.value = '0';
-        }
-      } else {
-        input.value = '-';
-        input.disabled = true;
-      }
-    });
-  }, 10);
-}
-
-function attachCalcListeners() {
-  document.querySelectorAll(".ore-input").forEach(input => {
-    input.addEventListener("input", calculateMaterials);
-    input.addEventListener("blur", calculateMaterials);
-  });
-
-  document.querySelectorAll(".mineral-input").forEach(input => {
-    input.addEventListener("input", calculateMaterials);
-    input.addEventListener("blur", calculateMaterials);
-  });
-
-  document.querySelectorAll("select").forEach(select => {
-    select.addEventListener("change", calculateMaterials);
-  });
-
-  document.querySelectorAll(".convert-checkbox").forEach(cb => {
-    cb.addEventListener("change", () => {
-      calculateMaterials();
-      updateMineralInputsState();
-    });
-  });
-
-  updateMineralInputsState();
-}
+calculateMaterials();
