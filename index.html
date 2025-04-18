@@ -4,42 +4,89 @@
   <meta charset="UTF-8">
   <title>Калькулятор руды</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    label, select, input, button { display: block; margin: 10px 0; }
+    body {
+      background-color: #0b1d2a;
+      color: #00f7ff;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #102633;
+      color: #00f7ff;
+    }
+    th, td {
+      border: 1px solid #1f3c4d;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #123b50;
+    }
+    input {
+      width: 60px;
+      background-color: #081c27;
+      color: #00f7ff;
+      border: 1px solid #1f3c4d;
+      text-align: center;
+    }
+    .total {
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
   </style>
 </head>
 <body>
-  <h1>Калькулятор руды для Звёздной Федерации</h1>
-
-  <label for="material">Выберите материал:</label>
-  <select id="material">
-    <option value="1">Материал A (1 минерал)</option>
-    <option value="2">Материал B (2 минерала)</option>
-    <option value="3">Материал C (3 минерала)</option>
-    <!-- Добавьте другие материалы по аналогии -->
-  </select>
-
-  <label for="quantity">Количество материалов:</label>
-  <input type="number" id="quantity" min="1" value="1">
-
-  <button onclick="calculateOre()">Рассчитать</button>
-
-  <h2 id="result"></h2>
+  <h1>Калькулятор руды</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Материал</th>
+        <th>Минералов на 1 шт</th>
+        <th>Количество</th>
+        <th>Необходимая руда</th>
+      </tr>
+    </thead>
+    <tbody id="material-table">
+      <tr>
+        <td>Сталь</td>
+        <td>2</td>
+        <td><input type="number" min="0" value="0" onchange="calculateOre()"></td>
+        <td class="ore-cell">0</td>
+      </tr>
+      <tr>
+        <td>Электроника</td>
+        <td>3</td>
+        <td><input type="number" min="0" value="0" onchange="calculateOre()"></td>
+        <td class="ore-cell">0</td>
+      </tr>
+      <tr>
+        <td>Полимеры</td>
+        <td>1</td>
+        <td><input type="number" min="0" value="0" onchange="calculateOre()"></td>
+        <td class="ore-cell">0</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="total" id="total-ore">Суммарная руда: 0</div>
 
   <script>
     function calculateOre() {
-      const materialSelect = document.getElementById('material');
-      const mineralsPerMaterial = parseFloat(materialSelect.value);
-      const quantity = parseInt(document.getElementById('quantity').value);
+      const table = document.getElementById('material-table');
+      let totalOre = 0;
 
-      if (isNaN(quantity) || quantity < 1) {
-        document.getElementById('result').textContent = "Введите корректное количество материалов.";
-        return;
+      for (let row of table.rows) {
+        const mineralsPerUnit = parseFloat(row.cells[1].textContent);
+        const amount = parseInt(row.cells[2].querySelector('input').value);
+        const totalMinerals = mineralsPerUnit * amount;
+        const ore = Math.ceil(totalMinerals * 4 * 1.1);
+
+        row.cells[3].textContent = ore;
+        totalOre += ore;
       }
 
-      const totalMinerals = mineralsPerMaterial * quantity;
-      const totalOre = Math.ceil(totalMinerals * 4 * 1.1);
-      document.getElementById('result').textContent = `Необходимо руды: ${totalOre}`;
+      document.getElementById('total-ore').textContent = 'Суммарная руда: ' + totalOre;
     }
   </script>
 </body>
