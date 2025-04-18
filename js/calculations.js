@@ -35,16 +35,6 @@ function copyMaterialValue(name, outputSpan) {
   navigator.clipboard.writeText(text);
 }
 
-const recipes = {
-  "Электронные компоненты": { "Железная руда": 1, "Полиэлементная руда": 1, "Крокит": 1 },
-  "Алюминий": { "Железная руда": 1, "Полиэлементная руда": 2, "Иридиум": 1 },
-  "Сталь": { "Железная руда": 2, "Полиэлементная руда": 1, "Митрацит": 1 },
-  "Титановый сплав": { "Железная руда": 1, "Полиэлементная руда": 1, "Титанит": 1 },
-  "Нановолокно": { "Железная руда": 1, "Полиэлементная руда": 1, "Брадий": 1 },
-  "Полимеры": { "Полиорганическая руда": 2, "Полиэлементная руда": 1 },
-  "Композиты": { "Полиорганическая руда": 2, "Полиэлементная руда": 1, "Железная руда": 1, "Иридиум": 1, "Митрацит": 1 }
-};
-
 function getOreValues() {
   const inputs = document.querySelectorAll(".ore-input");
   const oreValues = {};
@@ -61,66 +51,87 @@ function getEfficiency(select) {
   return parseInt(value, 10) / 100;
 }
 
+const recipes = {
+  "Электронные компоненты": { "Железная руда": 1, "Полиэлементная руда": 1, "Крокит": 1 },
+  "Алюминий": { "Железная руда": 1, "Полиэлементная руда": 2, "Иридиум": 1 },
+  "Сталь": { "Железная руда": 2, "Полиэлементная руда": 1, "Митрацит": 1 },
+  "Титановый сплав": { "Железная руда": 1, "Полиэлементная руда": 1, "Титанит": 1 },
+  "Нановолокно": { "Железная руда": 1, "Полиэлементная руда": 1, "Брадий": 1 },
+  "Полимеры": { "Полиорганическая руда": 2, "Полиэлементная руда": 1 },
+  "Композиты": { "Полиорганическая руда": 2, "Полиэлементная руда": 1, "Железная руда": 1, "Иридиум": 1, "Митрацит": 1 }
+};
+
+const conversionRules = {
+  "Уран": { base: 4, bonus: 0.1 },
+  "Митрацит": { base: 4, bonus: 0.1 },
+  "Иридиум": { base: 4, bonus: 0.1 },
+  "Крокит": { base: 6, bonus: 0.1 },
+  "Брадий": { base: 20, bonus: 0.1 },
+  "Титанит": { base: 40, bonus: 0.1 },
+};
+
 function calculateMaterials() {
-  const convertEnabled = document.getElementById("convertToggle").checked;
   const ores = getOreValues();
   const baseOres = ["Железная руда", "Полиэлементная руда", "Полиорганическая руда"];
+  const availableOres = { ...ores };
 
-  const conversionRules = {
-    "Уран": { base: 4, bonus: 0.1 },
-    "Митрацит": { base: 4, bonus: 0.1 },
-    "Иридиум": { base: 4, bonus: 0.1 },
-    "Крокит": { base: 6, bonus: 0.1 },
-    "Брадий": { base: 20, bonus: 0.1 },
-    "Титанит": { base: 40, bonus: 0.1 },
-  };
+  // Попробуем компенсировать недостающие минералы через преобразование
+  for (const [mineral, { base, bonus }] of Object.entries(conversionRules)) {
+    let available = availableOres[mineral] || 0;
+    let requiredPerUnit = base * (1 + bonus);
 
-  document.querySelectorAll("table tbody tr").forEach(row => {
-    const nameCell = row.querySelector("td:nth-child(2)");
-    const outputCell = row.querySelector(".material-output");
-    const select = row.querySelector("select");
-
-    if (!nameCell || !outputCell || !select) return;
-
-    const materialName = nameCell.textContent.trim();
-    const recipe = recipes[materialName];
-    if (!recipe) return;
-
-    const availableOres = { ...ores };
-
-    if (convertEnabled) {
-      for (const [mineral, { base, bonus }] of Object.entries(conversionRules)) {
-        const requiredAmount = recipe[mineral];
-        if (!requiredAmount) continue;
-
-        const available = availableOres[mineral] || 0;
-        let possibleUnits = Math.floor(available / requiredAmount);
-
-        if (possibleUnits === 0) {
-          const totalCost = base * (1 + bonus);
-          for (const baseOre of baseOres) {
-            const baseAvailable = availableOres[baseOre] || 0;
-            const convertCount = Math.floor(baseAvailable / totalCost);
-            if (convertCount > 0) {
-              availableOres[mineral] = (availableOres[mineral] || 0) + convertCount;
-              availableOres[baseOre] -= convertCount * totalCost;
-              break;
-            }
-          }
-        }
+    for (const baseOre of baseOres) {
+      const baseAvailable = availableOres[baseOre] || 0;
+      const convertCount = Math.floor(baseAvailable / requiredPerUnit);
+      if (convertCount > 0) {
+        availableOres[mineral] = (availableOres[mineral] || 0) + convertCount;
+        availableOres[baseOre] -= convertCount * requiredPerUnit;
+        break;
       }
     }
+  }
+
+  // Рассчитываем материалы (правый блок)
+  document.querySelectorAll("#right-block .material-output").forEach(output => {
+    const row = output.closest("tr");
+    const name = row.querySelector("td:nth-child(2)").textContent.trim();
+    const recipe = recipes[name];
+    const select = row.querySelector("select");
+    const efficiency = select ? getEfficiency(select) : 1;
+
+    if (!recipe) return;
 
     let maxOutput = Infinity;
-    for (const [oreName, required] of Object.entries(recipe)) {
-      const available = availableOres[oreName] || 0;
+    for (const [ore, required] of Object.entries(recipe)) {
+      const available = availableOres[ore] || 0;
       maxOutput = Math.min(maxOutput, Math.floor(available / required));
     }
 
-    const efficiency = getEfficiency(select);
     const result = Math.floor(maxOutput * efficiency);
-    outputCell.dataset.raw = result;
-    outputCell.textContent = formatTrillions(result);
+    output.dataset.raw = result;
+    output.textContent = formatTrillions(result);
+  });
+
+  // Вывод значений в левом блоке (минералы)
+  document.querySelectorAll("#left-block .material-output").forEach(output => {
+    const row = output.closest("tr");
+    const name = row.querySelector("td:nth-child(2)").textContent.trim();
+    const amount = availableOres[name] || 0;
+    output.dataset.raw = amount;
+    output.textContent = formatTrillions(amount);
+  });
+
+  // Остатки
+  document.querySelectorAll("#left-block .left-remaining").forEach(span => {
+    const name = span.dataset.ore;
+    const left = Math.floor(availableOres[name] || 0);
+    if (left > 0) {
+      span.textContent = formatTrillions(left);
+      span.classList.add("red");
+    } else {
+      span.textContent = "-";
+      span.classList.remove("red");
+    }
   });
 }
 
@@ -134,24 +145,13 @@ function attachCalcListeners() {
     select.addEventListener("change", calculateMaterials);
   });
 
-  document.getElementById("convertToggle").addEventListener("change", calculateMaterials);
+  document.querySelectorAll(".convert-checkbox").forEach(cb => {
+    cb.addEventListener("change", calculateMaterials);
+  });
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  const toggle = document.getElementById("convertToggle");
-  const selects = document.querySelectorAll("table select");
-  const oreInputs = document.querySelectorAll(".ore-input");
-
-  function updateSelectsState() {
-    selects.forEach(select => {
-      select.disabled = !toggle.checked;
-    });
-  }
-
-  toggle.addEventListener("change", updateSelectsState);
-  updateSelectsState();
-
-  oreInputs.forEach(input => {
+function formatLeftInputs() {
+  document.querySelectorAll(".ore-input").forEach(input => {
     let lastRawValue = input.value;
 
     input.addEventListener("focus", () => {
@@ -167,8 +167,9 @@ document.addEventListener("DOMContentLoaded", function () {
       lastRawValue = formatTrillions(parsed);
       input.value = lastRawValue;
     });
-  });
 
-  attachCalcListeners();
-  calculateMaterials();
-});
+    // сразу отформатируем
+    const parsed = parseInputToNumber(input.value);
+    input.value = formatTrillions(parsed);
+  });
+}

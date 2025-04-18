@@ -5,33 +5,28 @@
   <title>Калькулятор материалов</title>
   <link rel="stylesheet" href="css/styles.css">
   <script defer src="js/calculations.js"></script>
-  <style>
-    #left-block {
-      flex: 1.3;
-    }
-    #right-block {
-      flex: 1;
-    }
-  </style>
 </head>
 <body>
   <h1>Калькулятор материалов</h1>
+
   <div class="container">
     <div class="block" id="left-block"></div>
     <div class="block" id="right-block"></div>
   </div>
-  
 
   <script>
-    // Загрузка левого и правого блока через fetch
     document.addEventListener("DOMContentLoaded", () => {
+      // Загружаем левый блок
       fetch('components/left-block.html')
         .then(res => res.text())
         .then(html => {
           document.getElementById('left-block').innerHTML = html;
-          attachCalcListeners(); // Привязка событий после вставки
+          attachCalcListeners();     // подключаем обработчики
+          formatLeftInputs();        // форматируем ввод
+          calculateMaterials();      // сразу делаем расчёт
         });
 
+      // Загружаем правый блок
       fetch('components/right-block.html')
         .then(res => res.text())
         .then(html => {
