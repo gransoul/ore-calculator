@@ -1,4 +1,4 @@
-<table style="width: 130%;">
+<table>
   <thead>
     <tr>
       <th colspan="2">Руда / Минералы</th>
@@ -8,6 +8,7 @@
     </tr>
   </thead>
   <tbody>
+    <!-- Железная руда -->
     <tr>
       <td><img class="icon" src="images/productions/1-16.png"></td>
       <td>Железная руда</td>
@@ -15,10 +16,15 @@
         <input class="ore-input" type="text" value="0">
         <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Железная руда', this.previousElementSibling)">
       </td>
-      <td><input type="checkbox" class="convert-checkbox" data-ore="Железная руда"></td>
-      <td><span class="left-remaining" data-ore="Железная руда">-</span></td>
+      <td>
+        <input type="checkbox" class="convert-checkbox" data-ore="Железная руда">
+      </td>
+      <td>
+        <span class="left-remaining" data-ore="Железная руда">-</span>
+      </td>
     </tr>
 
+    <!-- Полиэлементная руда -->
     <tr>
       <td><img class="icon" src="images/productions/2-16.png"></td>
       <td>Полиэлементная руда</td>
@@ -26,10 +32,15 @@
         <input class="ore-input" type="text" value="0">
         <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Полиэлементная руда', this.previousElementSibling)">
       </td>
-      <td><input type="checkbox" class="convert-checkbox" data-ore="Полиэлементная руда"></td>
-      <td><span class="left-remaining" data-ore="Полиэлементная руда">-</span></td>
+      <td>
+        <input type="checkbox" class="convert-checkbox" data-ore="Полиэлементная руда">
+      </td>
+      <td>
+        <span class="left-remaining" data-ore="Полиэлементная руда">-</span>
+      </td>
     </tr>
 
+    <!-- Полиорганическая руда -->
     <tr>
       <td><img class="icon" src="images/productions/3-16.png"></td>
       <td>Полиорганическая руда</td>
@@ -37,10 +48,15 @@
         <input class="ore-input" type="text" value="0">
         <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Полиорганическая руда', this.previousElementSibling)">
       </td>
-      <td><input type="checkbox" class="convert-checkbox" data-ore="Полиорганическая руда"></td>
-      <td><span class="left-remaining" data-ore="Полиорганическая руда">-</span></td>
+      <td>
+        <input type="checkbox" class="convert-checkbox" data-ore="Полиорганическая руда">
+      </td>
+      <td>
+        <span class="left-remaining" data-ore="Полиорганическая руда">-</span>
+      </td>
     </tr>
 
+    <!-- Уран -->
     <tr>
       <td><img class="icon" src="images/productions/4-16.png"></td>
       <td>Уран</td>
@@ -49,58 +65,89 @@
         <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Уран', this.previousElementSibling)">
       </td>
       <td></td>
-      <td><span class="left-remaining" data-ore="Уран">-</span></td>
+      <td>
+        <span class="left-remaining" data-ore="Уран">-</span>
+      </td>
     </tr>
-    <tr><td colspan="5"><div style="height: 12px; width: 50%; margin: auto;"></div></td></tr>
 
+    <!-- Митрацит -->
     <tr>
       <td><img class="icon" src="images/productions/5-16.png"></td>
       <td>Митрацит</td>
-      <td><input class="ore-input" type="text" value="0">
+      <td>
+        <input class="ore-input" type="text" value="0">
         <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Митрацит', this.previousElementSibling)">
       </td>
-      <td></td>
-      <td><span class="left-remaining" data-ore="Митрацит">0</span></td>
+      <td>
+        <span class="material-output" data-raw="0">0</span>
+      </td>
+      <td>
+        <span class="left-remaining" data-ore="Митрацит">-</span>
+      </td>
     </tr>
 
+    <!-- Иридиум -->
     <tr>
       <td><img class="icon" src="images/productions/6-16.png"></td>
       <td>Иридиум</td>
-      <td><input class="ore-input" type="text" value="0">
+      <td>
+        <input class="ore-input" type="text" value="0">
         <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Иридиум', this.previousElementSibling)">
       </td>
-      <td></td>
-      <td><span class="left-remaining" data-ore="Иридиум">-</span></td>
+      <td>
+        <span class="material-output" data-raw="0">0</span>
+      </td>
+      <td>
+        <span class="left-remaining" data-ore="Иридиум">-</span>
+      </td>
     </tr>
 
+    <!-- Крокит -->
     <tr>
       <td><img class="icon" src="images/productions/7-16.png"></td>
       <td>Крокит</td>
-      <td><input class="ore-input" type="text" value="0">
+      <td>
+        <input class="ore-input" type="text" value="0">
         <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Крокит', this.previousElementSibling)">
       </td>
-      <td></td>
-      <td><span class="left-remaining" data-ore="Крокит">-</span></td>
+      <td>
+        <span class="material-output" data-raw="0">0</span>
+      </td>
+      <td>
+        <span class="left-remaining" data-ore="Крокит">-</span>
+      </td>
     </tr>
 
+    <!-- Брадий -->
     <tr>
       <td><img class="icon" src="images/productions/8-16.png"></td>
       <td>Брадий</td>
-      <td><input class="ore-input" type="text" value="0">
+      <td>
+        <input class="ore-input" type="text" value="0">
         <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Брадий', this.previousElementSibling)">
       </td>
-      <td></td>
-      <td><span class="left-remaining" data-ore="Брадий">-</span></td>
+      <td>
+        <span class="material-output" data-raw="0">0</span>
+      </td>
+      <td>
+        <span class="left-remaining" data-ore="Брадий">-</span>
+      </td>
     </tr>
 
+    <!-- Титанит -->
     <tr>
       <td><img class="icon" src="images/productions/9-16.png"></td>
       <td>Титанит</td>
-      <td><input class="ore-input" type="text" value="0">
+      <td>
+        <input class="ore-input" type="text" value="0">
         <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Титанит', this.previousElementSibling)">
       </td>
-      <td></td>
-      <td><span class="left-remaining" data-ore="Титанит">-</span></td>
+      <td>
+        <span class="material-output" data-raw="0">0</span>
+      </td>
+      <td>
+        <span class="left-remaining" data-ore="Титанит">-</span>
+      </td>
     </tr>
   </tbody>
 </table>
