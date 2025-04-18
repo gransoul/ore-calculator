@@ -5,25 +5,27 @@
   <title>Калькулятор руды</title>
   <style>
     body {
-      background-color: #0b1d2a;
+      background-color: #071c24;
       color: #93a7a2;
       font-family: 'Segoe UI', sans-serif;
       padding: 20px;
     }
     h1 {
       color: #daa548;
+      text-align: center;
     }
     table {
-      width: 100%;
+      width: 48%;
+      margin: 1%;
       border-collapse: collapse;
+      float: left;
       background-color: #102633;
-      color: #93a7a2;
       box-shadow: 0 0 10px #000;
     }
     th, td {
       border: 1px solid #1f3c4d;
       padding: 8px;
-      text-align: center;
+      text-align: left;
     }
     th {
       background-color: #123b50;
@@ -36,81 +38,125 @@
       width: 80px;
       text-align: center;
     }
-    .total {
-      margin-top: 20px;
-      font-size: 1.1em;
-      color: #00f7ff;
+    .icon {
+      width: 16px;
+      height: 16px;
+      vertical-align: middle;
+      margin-right: 5px;
     }
-    .material-name {
-      text-align: left;
-      padding-left: 10px;
+    .container {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
     }
+    .clear { clear: both; }
   </style>
 </head>
 <body>
   <h1>Калькулятор руды</h1>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Руда</th>
-        <th>Материал</th>
-        <th>Минералов на 1 шт</th>
-        <th>Количество</th>
-      </tr>
-    </thead>
-    <tbody id="material-table">
-      <tr>
-        <td class="ore-cell">0</td>
-        <td class="material-name">Сталь</td>
-        <td class="mineral">2</td>
-        <td><input type="number" min="0" value="0" onchange="calculateOre()"></td>
-      </tr>
-      <tr>
-        <td class="ore-cell">0</td>
-        <td class="material-name">Электронные компоненты</td>
-        <td class="mineral">3</td>
-        <td><input type="number" min="0" value="0" onchange="calculateOre()"></td>
-      </tr>
-      <tr>
-        <td class="ore-cell">0</td>
-        <td class="material-name">Полимеры</td>
-        <td class="mineral">1</td>
-        <td><input type="number" min="0" value="0" onchange="calculateOre()"></td>
-      </tr>
-      <tr>
-        <td class="ore-cell">0</td>
-        <td class="material-name">Композиты</td>
-        <td class="mineral">4</td>
-        <td><input type="number" min="0" value="0" onchange="calculateOre()"></td>
-      </tr>
-      <tr>
-        <td class="ore-cell">0</td>
-        <td class="material-name">Квантиум</td>
-        <td class="mineral">10</td>
-        <td><input type="number" min="0" value="0" onchange="calculateOre()"></td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="container">
+    <table>
+      <thead>
+        <tr>
+          <th>Материалы</th>
+          <th>Количество</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><img src="https://www.starfederation.ru/images/productions/32-16.png" class="icon">Электронные компоненты</td>
+          <td><input type="number" onchange="calculateAll()" value="0"></td>
+        </tr>
+        <tr>
+          <td><img src="https://www.starfederation.ru/images/productions/48-16.png" class="icon">Алюминий</td>
+          <td><input type="number" onchange="calculateAll()" value="0"></td>
+        </tr>
+        <tr>
+          <td><img src="https://www.starfederation.ru/images/productions/47-16.png" class="icon">Сталь</td>
+          <td><input type="number" onchange="calculateAll()" value="0"></td>
+        </tr>
+        <tr>
+          <td><img src="https://www.starfederation.ru/images/productions/52-16.png" class="icon">Титановый сплав</td>
+          <td><input type="number" onchange="calculateAll()" value="0"></td>
+        </tr>
+        <tr>
+          <td><img src="https://www.starfederation.ru/images/productions/49-16.png" class="icon">Нановолокно</td>
+          <td><input type="number" onchange="calculateAll()" value="0"></td>
+        </tr>
+        <tr>
+          <td><img src="https://www.starfederation.ru/images/productions/50-16.png" class="icon">Полимеры</td>
+          <td><input type="number" onchange="calculateAll()" value="0"></td>
+        </tr>
+        <tr>
+          <td><img src="https://www.starfederation.ru/images/productions/51-16.png" class="icon">Композиты</td>
+          <td><input type="number" onchange="calculateAll()" value="0"></td>
+        </tr>
+      </tbody>
+    </table>
 
-  <div class="total" id="total-ore">Суммарная руда: 0</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Руда / Минералы</th>
+          <th>Количество</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><img src="https://www.starfederation.ru/images/productions/8-16.png" class="icon">Железная руда</td>
+          <td id="ore1">0</td>
+        </tr>
+        <tr>
+          <td><img src="https://www.starfederation.ru/images/productions/9-16.png" class="icon">Полиэлементная руда</td>
+          <td id="ore2">0</td>
+        </tr>
+        <tr>
+          <td><img src="https://www.starfederation.ru/images/productions/10-16.png" class="icon">Полиорганическая руда</td>
+          <td id="ore3">0</td>
+        </tr>
+        <tr>
+          <td><img src="https://www.starfederation.ru/images/productions/11-16.png" class="icon">Уран</td>
+          <td id="ore4">0</td>
+        </tr>
+        <tr>
+          <td><img src="https://www.starfederation.ru/images/productions/12-16.png" class="icon">Митрацит</td>
+          <td id="ore5">0</td>
+        </tr>
+        <tr>
+          <td><img src="https://www.starfederation.ru/images/productions/13-16.png" class="icon">Иридий</td>
+          <td id="ore6">0</td>
+        </tr>
+        <tr>
+          <td><img src="https://www.starfederation.ru/images/productions/14-16.png" class="icon">Крокит</td>
+          <td id="ore7">0</td>
+        </tr>
+        <tr>
+          <td><img src="https://www.starfederation.ru/images/productions/15-16.png" class="icon">Брадий</td>
+          <td id="ore8">0</td>
+        </tr>
+        <tr>
+          <td><img src="https://www.starfederation.ru/images/productions/16-16.png" class="icon">Титанит</td>
+          <td id="ore9">0</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="clear"></div>
 
   <script>
-    function calculateOre() {
-      const table = document.getElementById('material-table');
-      let totalOre = 0;
+    function calculateAll() {
+      const inputs = document.querySelectorAll('input[type="number"]');
+      let total = 0;
+      inputs.forEach(input => {
+        total += parseInt(input.value || 0);
+      });
 
-      for (let row of table.rows) {
-        const mineralsPerUnit = parseFloat(row.querySelector('.mineral').textContent);
-        const quantity = parseInt(row.querySelector('input').value);
-        const totalMinerals = mineralsPerUnit * quantity;
-        const ore = Math.ceil(totalMinerals * 4 * 1.1);
-
-        row.querySelector('.ore-cell').textContent = ore;
-        totalOre += ore;
+      // Простой пример — равномерное распределение по руде
+      for (let i = 1; i <= 9; i++) {
+        document.getElementById("ore" + i).innerText = Math.ceil(total * 4 * 1.1 / 9);
       }
-
-      document.getElementById('total-ore').textContent = 'Суммарная руда: ' + totalOre;
     }
   </script>
 </body>
