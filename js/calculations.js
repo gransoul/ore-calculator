@@ -160,3 +160,44 @@ function calculateMaterials() {
 }
 
 calculateMaterials();
+
+function attachCalcListeners() {
+  document.querySelectorAll(".ore-input").forEach(input => {
+    input.addEventListener("input", () => {
+      calculateMaterials();
+    });
+    input.addEventListener("blur", () => {
+      const parsed = parseInputToNumber(input.value);
+      input.value = formatTrillions(parsed);
+      calculateMaterials();
+    });
+  });
+
+  document.querySelectorAll(".mineral-input").forEach(input => {
+    input.addEventListener("input", () => {
+      calculateMaterials();
+    });
+    input.addEventListener("blur", () => {
+      const parsed = parseInputToNumber(input.value);
+      input.value = (input.disabled ? "-" : formatTrillions(parsed));
+      calculateMaterials();
+    });
+  });
+
+  document.querySelectorAll("select").forEach(select => {
+    select.addEventListener("change", calculateMaterials);
+  });
+
+  document.querySelectorAll(".convert-checkbox").forEach(cb => {
+    cb.addEventListener("change", () => {
+      calculateMaterials();
+    });
+  });
+}
+
+// Подключение после загрузки страницы
+document.addEventListener("DOMContentLoaded", function () {
+  attachCalcListeners();
+  calculateMaterials();
+});
+
