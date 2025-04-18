@@ -24,13 +24,25 @@ function formatTrillions(value) {
 }
 
 function getOreValues() {
-  const inputs = document.querySelectorAll(".ore-input, .mineral-input");
   const oreValues = {};
-  inputs.forEach(input => {
+
+  // Сначала собираем все обычные руды
+  document.querySelectorAll(".ore-input").forEach(input => {
     const row = input.closest("tr");
     const oreName = row.querySelector("td:nth-child(2)").textContent.trim();
     oreValues[oreName] = parseInputToNumber(input.value);
   });
+
+  // Добавляем вручную введённые минералы (если включены или редактируются)
+  document.querySelectorAll(".mineral-input").forEach(input => {
+    const row = input.closest("tr");
+    const mineralName = row.querySelector("td:nth-child(2)").textContent.trim();
+    const value = parseInputToNumber(input.value);
+    if (!isNaN(value)) {
+      oreValues[mineralName] = value;
+    }
+  });
+
   return oreValues;
 }
 
