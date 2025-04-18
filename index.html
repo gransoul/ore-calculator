@@ -190,7 +190,7 @@ function calculateMaterials() {
     // Вычитаем использованную руду
     for (const [oreName, required] of Object.entries(recipe)) {
       if (oreData[oreName]) {
-        oreData[oreName].value -= required * maxOutput;
+        oreData[oreName].value = required * maxOutput;
       }
     }
   });
