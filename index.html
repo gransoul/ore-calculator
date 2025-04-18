@@ -127,34 +127,71 @@
       return parseInt(value, 10) / 100;
     }
 
-    function calculateMaterials() {
-      if (!document.getElementById("convertToggle").checked) return;
+function calculateMaterials() {
+  const convertEnabled = document.getElementById("convertToggle").checked;
+  const ores = getOreValues();
 
-      const ores = getOreValues();
+  const baseOres = ["Железная руда", "Полиэлементная руда", "Полиорганическая руда"];
 
-      document.querySelectorAll("table tbody tr").forEach(row => {
-        const nameCell = row.querySelector("td:nth-child(2)");
-        const outputCell = row.querySelector(".material-output");
-        const select = row.querySelector("select");
+  const conversionRules = {
+    "Уран": { base: 4, bonus: 0.1 },
+    "Митрацит": { base: 4, bonus: 0.1 },
+    "Иридиум": { base: 4, bonus: 0.1 },
+    "Крокит": { base: 6, bonus: 0.1 },
+    "Брадий": { base: 20, bonus: 0.1 },
+    "Титанит": { base: 40, bonus: 0.1 },
+  };
 
-        if (!nameCell || !outputCell || !select) return;
+  document.querySelectorAll("table tbody tr").forEach(row => {
+    const nameCell = row.querySelector("td:nth-child(2)");
+    const outputCell = row.querySelector(".material-output");
+    const select = row.querySelector("select");
 
-        const materialName = nameCell.textContent.trim();
-        const recipe = recipes[materialName];
-        if (!recipe) return;
+    if (!nameCell || !outputCell || !select) return;
 
-        let maxOutput = Infinity;
-        for (const [oreName, required] of Object.entries(recipe)) {
-          const available = ores[oreName] || 0;
-          maxOutput = Math.min(maxOutput, Math.floor(available / required));
+    const materialName = nameCell.textContent.trim();
+    const recipe = recipes[materialName];
+    if (!recipe) return;
+
+    const availableOres = { ...ores };
+
+    // Попробуем компенсировать недостающие минералы
+    if (convertEnabled) {
+      for (const [mineral, { base, bonus }] of Object.entries(conversionRules)) {
+        const requiredAmount = recipe[mineral];
+        if (!requiredAmount) continue;
+
+        const available = availableOres[mineral] || 0;
+        let possibleUnits = Math.floor(available / requiredAmount);
+
+        // Если не хватает — попытаемся сконвертировать из базовых руд
+        if (possibleUnits === 0) {
+          const totalCost = base * (1 + bonus); // с учётом +10%
+          for (const baseOre of baseOres) {
+            const baseAvailable = availableOres[baseOre] || 0;
+            const convertCount = Math.floor(baseAvailable / totalCost);
+            if (convertCount > 0) {
+              availableOres[mineral] = (availableOres[mineral] || 0) + convertCount;
+              availableOres[baseOre] -= convertCount * totalCost;
+              break; // только один тип замены используем
+            }
+          }
         }
-
-        const efficiency = getEfficiency(select);
-        const result = Math.floor(maxOutput * efficiency);
-        outputCell.dataset.raw = result;
-        outputCell.textContent = formatTrillions(result);
-      });
+      }
     }
+
+    let maxOutput = Infinity;
+    for (const [oreName, required] of Object.entries(recipe)) {
+      const available = availableOres[oreName] || 0;
+      maxOutput = Math.min(maxOutput, Math.floor(available / required));
+    }
+
+    const efficiency = getEfficiency(select);
+    const result = Math.floor(maxOutput * efficiency);
+    outputCell.dataset.raw = result;
+    outputCell.textContent = formatTrillions(result);
+  });
+}
 
     function copyMaterialValue(name, outputSpan) {
       const raw = outputSpan.dataset.raw || "0";
