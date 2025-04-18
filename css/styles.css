@@ -1,0 +1,73 @@
+body {
+  background-color: #0b1d2a;
+  color: #93a7a2;
+  font-family: 'Segoe UI', sans-serif;
+  padding: 20px;
+}
+h1 {
+  color: #daa548;
+  text-align: center;
+}
+.container {
+  display: flex;
+  gap: 20px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #102633;
+  color: #93a7a2;
+  box-shadow: 0 0 10px #000;
+}
+th, td {
+  border: 1px solid #1f3c4d;
+  padding: 8px;
+  text-align: center;
+}
+th {
+  background-color: #123b50;
+  color: #daa548;
+}
+input[type="text"], select {
+  background-color: #081c27;
+  color: #00f7ff;
+  border: 1px solid #1f3c4d;
+  width: 140px;
+  text-align: center;
+}
+.material-output {
+  color: #00f7ff;
+  display: inline-block;
+  width: 100px;
+  text-align: center;
+}
+.icon {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+.copy-icon {
+  cursor: pointer;
+  margin-left: 6px;
+}
+.block {
+  flex: 1;
+}
+.toggle-row {
+  background-color: #081c27;
+  border: 1px solid #1f3c4d;
+  padding: 8px;
+  text-align: center;
+  margin-bottom: 10px;
+  color: #daa548;
+}
+.calculate-button {
+  background-color: #daa548;
+  color: #0b1d2a;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
