@@ -8,6 +8,7 @@
     </tr>
   </thead>
   <tbody>
+
     <!-- Железная руда -->
     <tr>
       <td><img class="icon" src="images/productions/1-16.png"></td>
@@ -56,28 +57,28 @@
       </td>
     </tr>
 
-<!-- Уран -->
-<tr>
-  <td><img class="icon" src="images/productions/4-16.png"></td>
-  <td>Уран</td>
-  <td>
-    <input class="ore-input" type="text" value="0">
-    <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Уран', this.previousElementSibling)">
-  </td>
-  <td>
-    <input type="checkbox" class="convert-checkbox" data-ore="Уран">
-  </td>
-  <td>
-    <span class="left-remaining" data-ore="Уран">-</span>
-  </td>
-</tr>
+    <!-- Уран -->
+    <tr>
+      <td><img class="icon" src="images/productions/4-16.png"></td>
+      <td>Уран</td>
+      <td>
+        <input class="ore-input" type="text" value="0">
+        <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Уран', this.previousElementSibling)">
+      </td>
+      <td>
+        <input type="checkbox" class="convert-checkbox" data-ore="Уран">
+      </td>
+      <td>
+        <span class="left-remaining" data-ore="Уран">-</span>
+      </td>
+    </tr>
 
-<!-- Пустая строка под Ураном -->
-<tr>
-  <td colspan="5">
-    <div style="height: 12px; width: 50%; margin: auto;"></div>
-  </td>
-</tr>
+    <!-- Пустая строка -->
+    <tr>
+      <td colspan="5">
+        <div style="height: 12px; width: 50%; margin: auto;"></div>
+      </td>
+    </tr>
 
     <!-- Митрацит -->
     <tr>
@@ -88,7 +89,7 @@
         <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Митрацит', this.previousElementSibling)">
       </td>
       <td>
-        <span class="material-output" data-raw="0">0</span>
+        <input class="mineral-input" type="text" value="0" disabled>
       </td>
       <td>
         <span class="left-remaining" data-ore="Митрацит">-</span>
@@ -104,7 +105,7 @@
         <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Иридиум', this.previousElementSibling)">
       </td>
       <td>
-        <span class="material-output" data-raw="0">0</span>
+        <input class="mineral-input" type="text" value="0" disabled>
       </td>
       <td>
         <span class="left-remaining" data-ore="Иридиум">-</span>
@@ -120,7 +121,7 @@
         <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Крокит', this.previousElementSibling)">
       </td>
       <td>
-        <span class="material-output" data-raw="0">0</span>
+        <input class="mineral-input" type="text" value="0" disabled>
       </td>
       <td>
         <span class="left-remaining" data-ore="Крокит">-</span>
@@ -136,7 +137,7 @@
         <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Брадий', this.previousElementSibling)">
       </td>
       <td>
-        <span class="material-output" data-raw="0">0</span>
+        <input class="mineral-input" type="text" value="0" disabled>
       </td>
       <td>
         <span class="left-remaining" data-ore="Брадий">-</span>
@@ -152,7 +153,7 @@
         <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Титанит', this.previousElementSibling)">
       </td>
       <td>
-        <span class="material-output" data-raw="0">0</span>
+        <input class="mineral-input" type="text" value="0" disabled>
       </td>
       <td>
         <span class="left-remaining" data-ore="Титанит">-</span>
