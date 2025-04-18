@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Калькулятор материалов из руды</title>
+  <title>Калькулятор материалов</title>
   <style>
     body {
       background-color: #0b1d2a;
@@ -12,6 +12,11 @@
     }
     h1 {
       color: #daa548;
+      text-align: center;
+    }
+    .container {
+      display: flex;
+      gap: 20px;
     }
     table {
       width: 100%;
@@ -23,27 +28,19 @@
     th, td {
       border: 1px solid #1f3c4d;
       padding: 8px;
-      text-align: center;
+      text-align: left;
     }
     th {
       background-color: #123b50;
       color: #daa548;
+      text-align: center;
     }
     input[type="number"] {
       background-color: #081c27;
       color: #00f7ff;
       border: 1px solid #1f3c4d;
-      width: 80px;
+      width: 100px;
       text-align: center;
-    }
-    .total {
-      margin-top: 20px;
-      font-size: 1.1em;
-      color: #00f7ff;
-    }
-    .material-name {
-      text-align: left;
-      padding-left: 10px;
     }
     .icon {
       width: 16px;
@@ -51,104 +48,89 @@
       vertical-align: middle;
       margin-right: 6px;
     }
+    .block {
+      flex: 1;
+    }
   </style>
 </head>
 <body>
-  <h1>Калькулятор материалов из руды</h1>
+  <h1>Калькулятор материалов</h1>
+  <div class="container">
+    <!-- Левая колонка: Руда / Минералы -->
+    <div class="block">
+      <table>
+        <thead>
+          <tr>
+            <th colspan="2">Руда / Минералы</th>
+            <th>Количество</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><img class="icon" src="images/productions/1-16.png"></td><td>Железная руда</td><td><input type="number" min="0"></td>
+          </tr>
+          <tr>
+            <td><img class="icon" src="images/productions/2-16.png"></td><td>Полиэлементная руда</td><td><input type="number" min="0"></td>
+          </tr>
+          <tr>
+            <td><img class="icon" src="images/productions/3-16.png"></td><td>Полиорганическая руда</td><td><input type="number" min="0"></td>
+          </tr>
+          <tr>
+            <td><img class="icon" src="images/productions/4-16.png"></td><td>Уран</td><td><input type="number" min="0"></td>
+          </tr>
+          <tr>
+            <td><img class="icon" src="images/productions/5-16.png"></td><td>Митрацит</td><td><input type="number" min="0"></td>
+          </tr>
+          <tr>
+            <td><img class="icon" src="images/productions/6-16.png"></td><td>Иридиум</td><td><input type="number" min="0"></td>
+          </tr>
+          <tr>
+            <td><img class="icon" src="images/productions/7-16.png"></td><td>Крокит</td><td><input type="number" min="0"></td>
+          </tr>
+          <tr>
+            <td><img class="icon" src="images/productions/8-16.png"></td><td>Брадий</td><td><input type="number" min="0"></td>
+          </tr>
+          <tr>
+            <td><img class="icon" src="images/productions/9-16.png"></td><td>Титанит</td><td><input type="number" min="0"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Количество руды</th>
-        <th>Материал</th>
-        <th>Минералов на 1 шт</th>
-        <th>Можно создать</th>
-      </tr>
-    </thead>
-    <tbody id="material-table">
-      <tr>
-        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
-        <td class="material-name"><img class="icon" src="images/productions/32-16.png">Электронные компоненты</td>
-        <td class="mineral">3</td>
-        <td class="result-cell">0</td>
-      </tr>
-      <tr>
-        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
-        <td class="material-name"><img class="icon" src="images/productions/48-16.png">Титановый сплав</td>
-        <td class="mineral">4</td>
-        <td class="result-cell">0</td>
-      </tr>
-      <tr>
-        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
-        <td class="material-name"><img class="icon" src="images/productions/1-16.png">Железная руда</td>
-        <td class="mineral">1</td>
-        <td class="result-cell">0</td>
-      </tr>
-      <tr>
-        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
-        <td class="material-name"><img class="icon" src="images/productions/2-16.png">Полиэлементная руда</td>
-        <td class="mineral">1</td>
-        <td class="result-cell">0</td>
-      </tr>
-      <tr>
-        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
-        <td class="material-name"><img class="icon" src="images/productions/3-16.png">Полиорганическая руда</td>
-        <td class="mineral">1</td>
-        <td class="result-cell">0</td>
-      </tr>
-      <tr>
-        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
-        <td class="material-name"><img class="icon" src="images/productions/4-16.png">Уран</td>
-        <td class="mineral">1</td>
-        <td class="result-cell">0</td>
-      </tr>
-      <tr>
-        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
-        <td class="material-name"><img class="icon" src="images/productions/5-16.png">Митрацит</td>
-        <td class="mineral">1</td>
-        <td class="result-cell">0</td>
-      </tr>
-      <tr>
-        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
-        <td class="material-name"><img class="icon" src="images/productions/6-16.png">Иридиум</td>
-        <td class="mineral">1</td>
-        <td class="result-cell">0</td>
-      </tr>
-      <tr>
-        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
-        <td class="material-name"><img class="icon" src="images/productions/7-16.png">Крокит</td>
-        <td class="mineral">1</td>
-        <td class="result-cell">0</td>
-      </tr>
-      <tr>
-        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
-        <td class="material-name"><img class="icon" src="images/productions/8-16.png">Брадий</td>
-        <td class="mineral">1</td>
-        <td class="result-cell">0</td>
-      </tr>
-      <tr>
-        <td><input type="number" min="0" value="0" onchange="calculateMaterials(this)"></td>
-        <td class="material-name"><img class="icon" src="images/productions/9-16.png">Титанит</td>
-        <td class="mineral">1</td>
-        <td class="result-cell">0</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <script>
-    function calculateMaterials(input) {
-      const row = input.closest('tr');
-      const ore = parseFloat(input.value);
-      const mineralsPerItem = parseFloat(row.querySelector('.mineral').textContent);
-
-      if (!isNaN(ore) && mineralsPerItem > 0) {
-        const minerals = ore / 1.1 / 4;
-        const count = Math.floor(minerals / mineralsPerItem);
-        row.querySelector('.result-cell').textContent = count;
-      } else {
-        row.querySelector('.result-cell').textContent = 0;
-      }
-    }
-  </script>
+    <!-- Правая колонка: Материалы -->
+    <div class="block">
+      <table>
+        <thead>
+          <tr>
+            <th colspan="2">Материалы</th>
+            <th>Количество</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><img class="icon" src="images/productions/32-16.png"></td><td>Электронные компоненты</td><td><input type="number" min="0"></td>
+          </tr>
+          <tr>
+            <td><img class="icon" src="images/productions/10-16.png"></td><td>Алюминий</td><td><input type="number" min="0"></td>
+          </tr>
+          <tr>
+            <td><img class="icon" src="images/productions/47-16.png"></td><td>Сталь</td><td><input type="number" min="0"></td>
+          </tr>
+          <tr>
+            <td><img class="icon" src="images/productions/48-16.png"></td><td>Титановый сплав</td><td><input type="number" min="0"></td>
+          </tr>
+          <tr>
+            <td><img class="icon" src="images/productions/49-16.png"></td><td>Нановолокно</td><td><input type="number" min="0"></td>
+          </tr>
+          <tr>
+            <td><img class="icon" src="images/productions/50-16.png"></td><td>Полимеры</td><td><input type="number" min="0"></td>
+          </tr>
+          <tr>
+            <td><img class="icon" src="images/productions/51-16.png"></td><td>Композиты</td><td><input type="number" min="0"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </body>
 </html>
