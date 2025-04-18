@@ -28,17 +28,22 @@
     th, td {
       border: 1px solid #1f3c4d;
       padding: 8px;
-      text-align: left;
+      text-align: center;
     }
     th {
       background-color: #123b50;
       color: #daa548;
-      text-align: center;
     }
-    input[type="number"], select {
+    input[type="text"], select {
       background-color: #081c27;
       color: #00f7ff;
       border: 1px solid #1f3c4d;
+      width: 140px;
+      text-align: center;
+    }
+    .material-output {
+      color: #00f7ff;
+      display: inline-block;
       width: 100px;
       text-align: center;
     }
@@ -47,6 +52,10 @@
       height: 16px;
       vertical-align: middle;
       margin-right: 6px;
+    }
+    .copy-icon {
+      cursor: pointer;
+      margin-left: 6px;
     }
     .block {
       flex: 1;
@@ -60,6 +69,73 @@
       color: #daa548;
     }
   </style>
+  <script>
+    function formatNumberWithSpaces(value) {
+      const str = value.toString().replace(/\D/g, '');
+      return str.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    }
+
+    function parseInputToNumber(value) {
+      const cleaned = value.replace(/\s+/g, '').replace(/,/g, '.');
+      if (cleaned.toLowerCase().includes('трлн')) {
+        const num = parseFloat(cleaned.replace(/[^\d\.]/g, ''));
+        return Math.round(num * 1_000_000_000_000);
+      }
+      return parseInt(cleaned) || 0;
+    }
+
+    function formatTrillions(value) {
+      const num = typeof value === 'number' ? value : parseInputToNumber(value);
+      if (num >= 1_000_000_000_000) {
+        const trillions = num / 1_000_000_000_000;
+        let result = trillions.toFixed(3).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+        return result + ' трлн';
+      }
+      return formatNumberWithSpaces(num);
+    }
+
+    function copyRowValue(name, input) {
+      const value = input.value;
+      const parsed = parseInputToNumber(value);
+      const text = `${name}: ${formatNumberWithSpaces(parsed)} шт.`;
+      navigator.clipboard.writeText(text).then(() => {
+        alert(`Скопировано: ${text}`);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      const toggle = document.getElementById("convertToggle");
+      const selects = document.querySelectorAll("table select");
+      const oreInputs = document.querySelectorAll(".ore-input");
+
+      function updateSelectsState() {
+        selects.forEach(select => {
+          select.disabled = !toggle.checked;
+        });
+      }
+
+      toggle.addEventListener("change", updateSelectsState);
+      updateSelectsState();
+
+      oreInputs.forEach(input => {
+        let lastRawValue = input.value;
+
+        input.addEventListener("focus", () => {
+          input.value = lastRawValue;
+        });
+
+        input.addEventListener("input", () => {
+          lastRawValue = input.value;
+        });
+
+        input.addEventListener("blur", () => {
+          const parsed = parseInputToNumber(input.value);
+          lastRawValue = formatTrillions(parsed);
+          input.value = lastRawValue;
+        });
+      });
+    });
+  </script>
 </head>
 <body>
   <h1>Калькулятор материалов</h1>
@@ -74,16 +150,16 @@
           </tr>
         </thead>
         <tbody>
-          <tr><td><img class="icon" src="images/productions/1-16.png"></td><td>Железная руда</td><td><input type="number" min="0"></td></tr>
-          <tr><td><img class="icon" src="images/productions/2-16.png"></td><td>Полиэлементная руда</td><td><input type="number" min="0"></td></tr>
-          <tr><td><img class="icon" src="images/productions/3-16.png"></td><td>Полиорганическая руда</td><td><input type="number" min="0"></td></tr>
-          <tr><td><img class="icon" src="images/productions/4-16.png"></td><td>Уран</td><td><input type="number" min="0"></td></tr>
+          <tr><td><img class="icon" src="images/productions/1-16.png"></td><td>Железная руда</td><td><input class="ore-input" type="text" value="0"><img class="copy-icon" src="https://www.starfederation.ru/images/icons/flat/i-copy-16.png" onclick="copyRowValue('Железная руда', this.previousElementSibling)"></td></tr>
+          <tr><td><img class="icon" src="images/productions/2-16.png"></td><td>Полиэлементная руда</td><td><input class="ore-input" type="text" value="0"><img class="copy-icon" src="https://www.starfederation.ru/images/icons/flat/i-copy-16.png" onclick="copyRowValue('Полиэлементная руда', this.previousElementSibling)"></td></tr>
+          <tr><td><img class="icon" src="images/productions/3-16.png"></td><td>Полиорганическая руда</td><td><input class="ore-input" type="text" value="0"><img class="copy-icon" src="https://www.starfederation.ru/images/icons/flat/i-copy-16.png" onclick="copyRowValue('Полиорганическая руда', this.previousElementSibling)"></td></tr>
+          <tr><td><img class="icon" src="images/productions/4-16.png"></td><td>Уран</td><td><input class="ore-input" type="text" value="0"><img class="copy-icon" src="https://www.starfederation.ru/images/icons/flat/i-copy-16.png" onclick="copyRowValue('Уран', this.previousElementSibling)"></td></tr>
           <tr><td colspan="3"><div style="height: 12px; width: 50%; margin: auto;"></div></td></tr>
-          <tr><td><img class="icon" src="images/productions/5-16.png"></td><td>Митрацит</td><td><input type="number" min="0"></td></tr>
-          <tr><td><img class="icon" src="images/productions/6-16.png"></td><td>Иридиум</td><td><input type="number" min="0"></td></tr>
-          <tr><td><img class="icon" src="images/productions/7-16.png"></td><td>Крокит</td><td><input type="number" min="0"></td></tr>
-          <tr><td><img class="icon" src="images/productions/8-16.png"></td><td>Брадий</td><td><input type="number" min="0"></td></tr>
-          <tr><td><img class="icon" src="images/productions/9-16.png"></td><td>Титанит</td><td><input type="number" min="0"></td></tr>
+          <tr><td><img class="icon" src="images/productions/5-16.png"></td><td>Митрацит</td><td><input class="ore-input" type="text" value="0"><img class="copy-icon" src="https://www.starfederation.ru/images/icons/flat/i-copy-16.png" onclick="copyRowValue('Митрацит', this.previousElementSibling)"></td></tr>
+          <tr><td><img class="icon" src="images/productions/6-16.png"></td><td>Иридиум</td><td><input class="ore-input" type="text" value="0"><img class="copy-icon" src="https://www.starfederation.ru/images/icons/flat/i-copy-16.png" onclick="copyRowValue('Иридиум', this.previousElementSibling)"></td></tr>
+          <tr><td><img class="icon" src="images/productions/7-16.png"></td><td>Крокит</td><td><input class="ore-input" type="text" value="0"><img class="copy-icon" src="https://www.starfederation.ru/images/icons/flat/i-copy-16.png" onclick="copyRowValue('Крокит', this.previousElementSibling)"></td></tr>
+          <tr><td><img class="icon" src="images/productions/8-16.png"></td><td>Брадий</td><td><input class="ore-input" type="text" value="0"><img class="copy-icon" src="https://www.starfederation.ru/images/icons/flat/i-copy-16.png" onclick="copyRowValue('Брадий', this.previousElementSibling)"></td></tr>
+          <tr><td><img class="icon" src="images/productions/9-16.png"></td><td>Титанит</td><td><input class="ore-input" type="text" value="0"><img class="copy-icon" src="https://www.starfederation.ru/images/icons/flat/i-copy-16.png" onclick="copyRowValue('Титанит', this.previousElementSibling)"></td></tr>
         </tbody>
       </table>
     </div>
@@ -91,93 +167,51 @@
     <!-- Правая колонка: Материалы -->
     <div class="block">
       <div class="toggle-row">
-        <label><input type="checkbox" id="convertToggle"> Преобразовывать материалы</label>
+        <label><input type="checkbox" id="convertToggle"> Преобразовывать руду / минералы</label>
       </div>
       <table>
         <thead>
           <tr>
             <th colspan="2">Материалы</th>
-            <th>%</th>
+            <th>Объём</th>
             <th>Количество</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td><img class="icon" src="images/productions/32-16.png"></td><td>Электронные компоненты</td>
-            <td><select>
-              <option>0%</option><option>5%</option><option>10%</option><option>15%</option><option>20%</option>
-              <option>25%</option><option>30%</option><option>35%</option><option>40%</option><option>45%</option>
-              <option>50%</option><option>55%</option><option>60%</option><option>65%</option><option>70%</option>
-              <option>75%</option><option>80%</option><option>85%</option><option>90%</option><option>95%</option>
-              <option>100%</option>
-            </select></td>
-            <td><input type="number" min="0"></td>
+            <td><select disabled><option selected>100%</option></select></td>
+            <td><span class="material-output">0 трлн</span></td>
           </tr>
           <tr>
             <td><img class="icon" src="images/productions/46-16.png"></td><td>Алюминий</td>
-            <td><select>
-              <option>0%</option><option>5%</option><option>10%</option><option>15%</option><option>20%</option>
-              <option>25%</option><option>30%</option><option>35%</option><option>40%</option><option>45%</option>
-              <option>50%</option><option>55%</option><option>60%</option><option>65%</option><option>70%</option>
-              <option>75%</option><option>80%</option><option>85%</option><option>90%</option><option>95%</option>
-              <option>100%</option>
-            </select></td>
-            <td><input type="number" min="0"></td>
+            <td><select disabled><option selected>100%</option></select></td>
+            <td><span class="material-output">0 трлн</span></td>
           </tr>
           <tr>
             <td><img class="icon" src="images/productions/47-16.png"></td><td>Сталь</td>
-            <td><select>
-              <option>0%</option><option>5%</option><option>10%</option><option>15%</option><option>20%</option>
-              <option>25%</option><option>30%</option><option>35%</option><option>40%</option><option>45%</option>
-              <option>50%</option><option>55%</option><option>60%</option><option>65%</option><option>70%</option>
-              <option>75%</option><option>80%</option><option>85%</option><option>90%</option><option>95%</option>
-              <option>100%</option>
-            </select></td>
-            <td><input type="number" min="0"></td>
+            <td><select disabled><option selected>100%</option></select></td>
+            <td><span class="material-output">0 трлн</span></td>
           </tr>
           <tr>
             <td><img class="icon" src="images/productions/48-16.png"></td><td>Титановый сплав</td>
-            <td><select>
-              <option>0%</option><option>5%</option><option>10%</option><option>15%</option><option>20%</option>
-              <option>25%</option><option>30%</option><option>35%</option><option>40%</option><option>45%</option>
-              <option>50%</option><option>55%</option><option>60%</option><option>65%</option><option>70%</option>
-              <option>75%</option><option>80%</option><option>85%</option><option>90%</option><option>95%</option>
-              <option>100%</option>
-            </select></td>
-            <td><input type="number" min="0"></td>
+            <td><select disabled><option selected>100%</option></select></td>
+            <td><span class="material-output">0 трлн</span></td>
           </tr>
           <tr>
             <td><img class="icon" src="images/productions/49-16.png"></td><td>Нановолокно</td>
-            <td><select>
-              <option>0%</option><option>5%</option><option>10%</option><option>15%</option><option>20%</option>
-              <option>25%</option><option>30%</option><option>35%</option><option>40%</option><option>45%</option>
-              <option>50%</option><option>55%</option><option>60%</option><option>65%</option><option>70%</option>
-              <option>75%</option><option>80%</option><option>85%</option><option>90%</option><option>95%</option>
-              <option>100%</option>
-            </select></td>
-            <td><input type="number" min="0"></td>
+            <td><select disabled><option selected>100%</option></select></td>
+            <td><span class="material-output">0 трлн</span></td>
           </tr>
           <tr>
             <td><img class="icon" src="images/productions/50-16.png"></td><td>Полимеры</td>
-            <td><select>
-              <option>0%</option><option>5%</option><option>10%</option><option>15%</option><option>20%</option>
-              <option>25%</option><option>30%</option><option>35%</option><option>40%</option><option>45%</option>
-              <option>50%</option><option>55%</option><option>60%</option><option>65%</option><option>70%</option>
-              <option>75%</option><option>80%</option><option>85%</option><option>90%</option><option>95%</option>
-              <option>100%</option>
-            </select></td>
-            <td><input type="number" min="0"></td>
+            <td><select disabled><option selected>100%</option></select></td>
+            <td><span class="material-output">0 трлн</span></td>
           </tr>
           <tr>
             <td><img class="icon" src="images/productions/51-16.png"></td><td>Композиты</td>
-            <td><select>
-              <option>0%</option><option>5%</option><option>10%</option><option>15%</option><option>20%</option>
-              <option>25%</option><option>30%</option><option>35%</option><option>40%</option><option>45%</option>
-              <option>50%</option><option>55%</option><option>60%</option><option>65%</option><option>70%</option>
-              <option>75%</option><option>80%</option><option>85%</option><option>90%</option><option>95%</option>
-              <option>100%</option>
-            </select></td>
-            <td><input type="number" min="0"></td>
+            <td><select disabled><option selected>100%</option></select></td>
+            <td><span class="material-output">0 трлн</span></td>
           </tr>
         </tbody>
       </table>
