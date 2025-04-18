@@ -21,9 +21,9 @@
         .then(res => res.text())
         .then(html => {
           document.getElementById('left-block').innerHTML = html;
-          attachCalcListeners();     // подключаем обработчики
-          formatLeftInputs();        // форматируем ввод
-          calculateMaterials();      // сразу делаем расчёт
+          attachCalcListeners();     // ← после загрузки блока
+          formatLeftInputs();        // ← формат "1 трлн"
+          calculateMaterials();      // ← рассчитать
         });
 
       // Загружаем правый блок

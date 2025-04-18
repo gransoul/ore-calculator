@@ -47,6 +47,7 @@ function getOreValues() {
 }
 
 function getEfficiency(select) {
+  if (!select) return 1;
   const value = select.value.replace('%', '');
   return parseInt(value, 10) / 100;
 }
@@ -75,9 +76,8 @@ function calculateMaterials() {
   const baseOres = ["Железная руда", "Полиэлементная руда", "Полиорганическая руда"];
   const availableOres = { ...ores };
 
-  // Попробуем компенсировать недостающие минералы через преобразование
+  // Преобразование минералов
   for (const [mineral, { base, bonus }] of Object.entries(conversionRules)) {
-    let available = availableOres[mineral] || 0;
     let requiredPerUnit = base * (1 + bonus);
 
     for (const baseOre of baseOres) {
@@ -91,13 +91,13 @@ function calculateMaterials() {
     }
   }
 
-  // Рассчитываем материалы (правый блок)
+  // Правый блок
   document.querySelectorAll("#right-block .material-output").forEach(output => {
     const row = output.closest("tr");
     const name = row.querySelector("td:nth-child(2)").textContent.trim();
     const recipe = recipes[name];
     const select = row.querySelector("select");
-    const efficiency = select ? getEfficiency(select) : 1;
+    const efficiency = getEfficiency(select);
 
     if (!recipe) return;
 
@@ -112,7 +112,7 @@ function calculateMaterials() {
     output.textContent = formatTrillions(result);
   });
 
-  // Вывод значений в левом блоке (минералы)
+  // Левый блок — вывод минералов
   document.querySelectorAll("#left-block .material-output").forEach(output => {
     const row = output.closest("tr");
     const name = row.querySelector("td:nth-child(2)").textContent.trim();
