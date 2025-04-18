@@ -101,11 +101,19 @@ function updateMineralInputsState() {
   });
 }
 
+// Обновлённая функция calculateMaterials с учётом использования минералов
 function calculateMaterials() {
   updateMineralInputsState();
   const oreInputs = getOreValues();
   const oreAvailable = { ...oreInputs };
   const oreUsed = {};
+
+  // Отдельно учитываем готовые минералы
+  const mineralNames = ["Митрацит", "Иридиум", "Крокит", "Брадий", "Титанит"];
+  const mineralsAvailable = {};
+  mineralNames.forEach(name => {
+    mineralsAvailable[name] = oreInputs[name] || 0;
+  });
 
   // 1. Производство материалов
   document.querySelectorAll("#right-block .material-output").forEach(output => {
@@ -118,7 +126,10 @@ function calculateMaterials() {
 
     let maxPossible = Infinity;
     for (const [res, amount] of Object.entries(recipe)) {
-      const available = oreAvailable[res] || 0;
+      const available =
+        oreAvailable[res] !== undefined
+          ? oreAvailable[res]
+          : mineralsAvailable[res] || 0;
       maxPossible = Math.min(maxPossible, Math.floor(available / amount));
     }
 
@@ -129,7 +140,12 @@ function calculateMaterials() {
     for (const [res, amount] of Object.entries(recipe)) {
       const used = amount * maxPossible;
       oreUsed[res] = (oreUsed[res] || 0) + used;
-      oreAvailable[res] -= used;
+
+      if (oreAvailable[res] !== undefined) {
+        oreAvailable[res] -= used;
+      } else if (mineralsAvailable[res] !== undefined) {
+        mineralsAvailable[res] -= used;
+      }
     }
   });
 
