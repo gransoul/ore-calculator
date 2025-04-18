@@ -71,3 +71,12 @@ input[type="text"], select {
   border-radius: 8px;
   cursor: pointer;
 }
+.left-remaining {
+  display: inline-block;
+  width: 100px;
+  text-align: center;
+}
+.left-remaining.red {
+  color: #ff4d4d;
+  font-weight: bold;
+}
