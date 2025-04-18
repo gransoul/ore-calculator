@@ -225,4 +225,37 @@ function attachCalcListeners() {
 document.addEventListener("DOMContentLoaded", function () {
   attachCalcListeners();
   calculateMaterials();
+
+  const btn = document.getElementById("clear-remainders");
+  if (btn) btn.addEventListener("click", removeRemainders);
 });
+
+
+function removeRemainders() {
+  document.querySelectorAll(".left-remaining").forEach(span => {
+    const name = span.dataset.ore;
+    let left = parseInputToNumber(span.textContent);
+    if (left <= 0) return;
+
+    const row = span.closest("tr");
+    const convertInput = row.querySelector(".mineral-input");
+    const qtyInput = row.querySelector(".ore-input");
+
+    if (convertInput && !convertInput.disabled) {
+      let val = parseInputToNumber(convertInput.value);
+      const reduce = Math.min(left, val);
+      convertInput.value = formatTrillions(val - reduce);
+      left -= reduce;
+    }
+
+    if (left > 0 && qtyInput) {
+      let val = parseInputToNumber(qtyInput.value);
+      const reduce = Math.min(left, val);
+      qtyInput.value = formatTrillions(val - reduce);
+      left -= reduce;
+    }
+  });
+
+  calculateMaterials();
+}
+
