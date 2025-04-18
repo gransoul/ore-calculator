@@ -259,12 +259,47 @@ function calculateMaterials() {
           <tr>
             <th colspan="2">Руда / Минералы</th>
             <th>Количество</th>
+	    <th>Преобразовать</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td><img class="icon" src="images/productions/1-16.png"></td><td>Железная руда</td><td><input class="ore-input" type="text" value="0"><img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Железная руда', this.previousElementSibling)"></td></tr>
-          <tr><td><img class="icon" src="images/productions/2-16.png"></td><td>Полиэлементная руда</td><td><input class="ore-input" type="text" value="0"><img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Полиэлементная руда', this.previousElementSibling)"></td></tr>
-          <tr><td><img class="icon" src="images/productions/3-16.png"></td><td>Полиорганическая руда</td><td><input class="ore-input" type="text" value="0"><img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Полиорганическая руда', this.previousElementSibling)"></td></tr>
+<tr>
+  <td><img class="icon" src="images/productions/1-16.png"></td>
+  <td>Железная руда</td>
+  <td>
+    <input class="ore-input" type="text" value="0">
+    <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Железная руда', this.previousElementSibling)">
+  </td>
+  <td>
+    <input type="checkbox" class="convert-checkbox" data-ore="Железная руда">
+  </td>
+</tr>
+
+<tr>
+  <td><img class="icon" src="images/productions/2-16.png"></td>
+  <td>Железная руда</td>
+  <td>
+    <input class="ore-input" type="text" value="0">
+    <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Полиэлементная руда', this.previousElementSibling)">
+  </td>
+  <td>
+    <input type="checkbox" class="convert-checkbox" data-ore="Железная руда">
+  </td>
+</tr>
+
+<tr>
+  <td><img class="icon" src="images/productions/3-16.png"></td>
+  <td>Железная руда</td>
+  <td>
+    <input class="ore-input" type="text" value="0">
+    <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Полиорганическая руда', this.previousElementSibling)">
+  </td>
+  <td>
+    <input type="checkbox" class="convert-checkbox" data-ore="Железная руда">
+  </td>
+</tr>
+
+
           <tr><td><img class="icon" src="images/productions/4-16.png"></td><td>Уран</td><td><input class="ore-input" type="text" value="0"><img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Уран', this.previousElementSibling)"></td></tr>
           <tr><td colspan="3"><div style="height: 12px; width: 50%; margin: auto;"></div></td></tr>
           <tr><td><img class="icon" src="images/productions/5-16.png"></td><td>Митрацит</td><td><input class="ore-input" type="text" value="0"><img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Митрацит', this.previousElementSibling)"></td></tr>
