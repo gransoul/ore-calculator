@@ -69,79 +69,148 @@
       color: #daa548;
     }
   </style>
-<script>
-  const recipes = {
-    "Электронные компоненты": { "Железная руда": 1, "Полиэлементная руда": 1, "Крокит": 1 },
-    "Алюминий": { "Железная руда": 1, "Полиэлементная руда": 2, "Иридиум": 1 },
-    "Сталь": { "Железная руда": 2, "Полиэлементная руда": 1, "Митрацит": 1 },
-    "Титановый сплав": { "Железная руда": 1, "Полиэлементная руда": 1, "Титанит": 1 },
-    "Нановолокно": { "Железная руда": 1, "Полиэлементная руда": 1, "Брадий": 1 },
-    "Полимеры": { "Полиорганическая руда": 2, "Полиэлементная руда": 1 },
-    "Композиты": { "Полиорганическая руда": 2, "Полиэлементная руда": 1, "Железная руда": 1, "Иридиум": 1, "Митрацит": 1 }
-  };
+  <script>
+    function formatNumberWithSpaces(value) {
+      const str = value.toString().replace(/\D/g, '');
+      return str.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    }
 
-  function getOreValues() {
-    const oreInputs = document.querySelectorAll(".ore-input");
-    const values = {};
-    oreInputs.forEach(input => {
-      const name = input.closest("tr").querySelector("td:nth-child(2)").textContent.trim();
-      values[name] = parseInputToNumber(input.value);
-    });
-    return values;
-  }
+    function parseInputToNumber(value) {
+      const cleaned = value.replace(/\s+/g, '').replace(/,/g, '.');
+      if (cleaned.toLowerCase().includes('трлн')) {
+        const num = parseFloat(cleaned.replace(/[^\d\.]/g, ''));
+        return Math.round(num * 1_000_000_000_000);
+      }
+      return parseInt(cleaned) || 0;
+    }
 
-  function calculateMaterialsSimple() {
-    const ores = getOreValues();
+    function formatTrillions(value) {
+      const num = typeof value === 'number' ? value : parseInputToNumber(value);
+      if (num >= 1_000_000_000_000) {
+        const trillions = num / 1_000_000_000_000;
+        let result = trillions.toFixed(3).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+        return result + ' трлн';
+      }
+      return formatNumberWithSpaces(num);
+    }
 
-    document.querySelectorAll(".material-output").forEach(output => {
-      const row = output.closest("tr");
-      const name = row.querySelector("td:nth-child(2)").textContent.trim();
-      const recipe = recipes[name];
-      if (!recipe) return;
+    function copyRowValue(name, input) {
+      const value = input.value;
+      const parsed = parseInputToNumber(value);
+      const text = `${name}: ${formatNumberWithSpaces(parsed)} шт.`;
+      navigator.clipboard.writeText(text);
+    }
 
-      let max = Infinity;
-      for (const [ore, need] of Object.entries(recipe)) {
-        const have = ores[ore] || 0;
-        max = Math.min(max, Math.floor(have / need));
+    const recipes = {
+      "Электронные компоненты": { "Железная руда": 1, "Полиэлементная руда": 1, "Крокит": 1 },
+      "Алюминий": { "Железная руда": 1, "Полиэлементная руда": 2, "Иридиум": 1 },
+      "Сталь": { "Железная руда": 2, "Полиэлементная руда": 1, "Митрацит": 1 },
+      "Титановый сплав": { "Железная руда": 1, "Полиэлементная руда": 1, "Титанит": 1 },
+      "Нановолокно": { "Железная руда": 1, "Полиэлементная руда": 1, "Брадий": 1 },
+      "Полимеры": { "Полиорганическая руда": 2, "Полиэлементная руда": 1 },
+      "Композиты": { "Полиорганическая руда": 2, "Полиэлементная руда": 1, "Железная руда": 1, "Иридиум": 1, "Митрацит": 1 }
+    };
+
+    function getOreValues() {
+      const inputs = document.querySelectorAll(".ore-input");
+      const oreValues = {};
+      inputs.forEach(input => {
+        const row = input.closest("tr");
+        const oreName = row.querySelector("td:nth-child(2)").textContent.trim();
+        oreValues[oreName] = parseInputToNumber(input.value);
+      });
+      return oreValues;
+    }
+
+    function getEfficiency(select) {
+      const value = select.value.replace('%', '');
+      return parseInt(value, 10) / 100;
+    }
+
+    function calculateMaterials() {
+      if (!document.getElementById("convertToggle").checked) return;
+
+      const ores = getOreValues();
+
+      document.querySelectorAll("table tbody tr").forEach(row => {
+        const nameCell = row.querySelector("td:nth-child(2)");
+        const outputCell = row.querySelector(".material-output");
+        const select = row.querySelector("select");
+
+        if (!nameCell || !outputCell || !select) return;
+
+        const materialName = nameCell.textContent.trim();
+        const recipe = recipes[materialName];
+        if (!recipe) return;
+
+        let maxOutput = Infinity;
+        for (const [oreName, required] of Object.entries(recipe)) {
+          const available = ores[oreName] || 0;
+          maxOutput = Math.min(maxOutput, Math.floor(available / required));
+        }
+
+        const efficiency = getEfficiency(select);
+        const result = Math.floor(maxOutput * efficiency);
+        outputCell.dataset.raw = result;
+        outputCell.textContent = formatTrillions(result);
+      });
+    }
+
+    function copyMaterialValue(name, outputSpan) {
+      const raw = outputSpan.dataset.raw || "0";
+      const text = `${name}: ${formatNumberWithSpaces(raw)} шт.`;
+      navigator.clipboard.writeText(text);
+    }
+
+    function attachCalcListeners() {
+      document.querySelectorAll(".ore-input").forEach(input => {
+        input.addEventListener("input", calculateMaterials);
+        input.addEventListener("blur", calculateMaterials);
+      });
+
+      document.querySelectorAll("select").forEach(select => {
+        select.addEventListener("change", calculateMaterials);
+      });
+
+      document.getElementById("convertToggle").addEventListener("change", calculateMaterials);
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const toggle = document.getElementById("convertToggle");
+      const selects = document.querySelectorAll("table select");
+      const oreInputs = document.querySelectorAll(".ore-input");
+
+      function updateSelectsState() {
+        selects.forEach(select => {
+          select.disabled = !toggle.checked;
+        });
       }
 
-      output.dataset.raw = max;
-      output.textContent = formatTrillions(max);
+      toggle.addEventListener("change", updateSelectsState);
+      updateSelectsState();
+
+      oreInputs.forEach(input => {
+        let lastRawValue = input.value;
+
+        input.addEventListener("focus", () => {
+          input.value = lastRawValue;
+        });
+
+        input.addEventListener("input", () => {
+          lastRawValue = input.value;
+        });
+
+        input.addEventListener("blur", () => {
+          const parsed = parseInputToNumber(input.value);
+          lastRawValue = formatTrillions(parsed);
+          input.value = lastRawValue;
+        });
+      });
+
+      attachCalcListeners();
+      calculateMaterials();
     });
-  }
-
-  function copyMaterialValue(name, outputSpan) {
-    const raw = outputSpan.dataset.raw || "0";
-    const text = `${name}: ${formatNumberWithSpaces(raw)} шт.`;
-    navigator.clipboard.writeText(text);
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    // input → расчёт
-    document.querySelectorAll(".ore-input").forEach(input => {
-      let lastRawValue = input.value;
-
-      input.addEventListener("focus", () => {
-        input.value = lastRawValue;
-      });
-
-      input.addEventListener("input", () => {
-        lastRawValue = input.value;
-        calculateMaterialsSimple();
-      });
-
-      input.addEventListener("blur", () => {
-        const parsed = parseInputToNumber(input.value);
-        lastRawValue = formatTrillions(parsed);
-        input.value = lastRawValue;
-        calculateMaterialsSimple();
-      });
-    });
-
-    calculateMaterialsSimple(); // первый запуск
-  });
-</script>
-
+  </script>
 </head>
 <body>
   <h1>Калькулятор материалов</h1>
