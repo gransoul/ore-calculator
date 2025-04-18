@@ -32,13 +32,13 @@ h1 {
 
 #left-block {
   flex: 1.3;
-  min-width: 600px;
+  min-width: 400px; /* уменьшено с 600px для лучшей адаптивности */
   margin-right: 10px;
 }
 
 #right-block {
   flex: 1;
-  min-width: 500px;
+  min-width: 350px; /* уменьшено с 500px для лучшей адаптивности */
 }
 
 /* Таблицы */

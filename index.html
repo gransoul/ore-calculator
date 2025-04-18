@@ -16,21 +16,35 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      // Загружаем левый блок
       fetch('components/left-block.html')
         .then(res => res.text())
         .then(html => {
           document.getElementById('left-block').innerHTML = html;
-          attachCalcListeners();     // ← после загрузки блока
-          formatLeftInputs();        // ← формат "1 трлн"
-          calculateMaterials();      // ← рассчитать
-        });
-
-      // Загружаем правый блок
-      fetch('components/right-block.html')
-        .then(res => res.text())
-        .then(html => {
-          document.getElementById('right-block').innerHTML = html;
+          fetch('components/right-block.html')
+            .then(res => res.text())
+            .then(html2 => {
+              document.getElementById('right-block').innerHTML = html2;
+              // После загрузки блоков подключаем обработчики и расчёты
+              if (window.attachCalcListeners) window.attachCalcListeners();
+              if (window.formatLeftInputs) window.formatLeftInputs();
+              if (window.calculateMaterials) window.calculateMaterials();
+              // Автоматически включаем/выключаем поля преобразования при изменении чекбоксов
+              document.querySelectorAll('.convert-checkbox').forEach(cb => {
+                cb.addEventListener('change', function() {
+                  if (window.toggleMineralInputs) window.toggleMineralInputs(this.getAttribute('data-ore'));
+                });
+              });
+              // Пересчёт при изменении полей преобразования
+              document.querySelectorAll('.mineral-input').forEach(inp => {
+                inp.addEventListener('input', function() {
+                  if (window.calculateMaterials) window.calculateMaterials();
+                });
+              });
+              // Пересчёт при изменении остатков (если потребуется)
+              document.getElementById('clear-remainders')?.addEventListener('click', function() {
+                if (window.clearRemainders) window.clearRemainders();
+              });
+            });
         });
     });
   </script>

@@ -1,68 +1,4 @@
-
-function formatNumberWithSpaces(value) {
-  const str = value.toString().replace(/\D/g, '');
-  return str.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-}
-
-function parseInputToNumber(value) {
-  const cleaned = value.replace(/\s+/g, '').replace(/,/g, '.');
-  if (cleaned.toLowerCase().includes('трлн')) {
-    const num = parseFloat(cleaned.replace(/[^\d\.]/g, ''));
-    return Math.round(num * 1_000_000_000_000);
-  }
-  return parseInt(cleaned) || 0;
-}
-
-function formatTrillions(value) {
-  const num = typeof value === 'number' ? value : parseInputToNumber(value);
-  if (num >= 1_000_000_000_000) {
-    const trillions = num / 1_000_000_000_000;
-    let result = trillions.toFixed(3).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
-    return result + ' трлн';
-  }
-  return formatNumberWithSpaces(num);
-}
-
-function getOreValues() {
-  const oreValues = {};
-
-  // Сначала собираем все обычные руды
-  document.querySelectorAll(".ore-input").forEach(input => {
-    const row = input.closest("tr");
-    const oreName = row.querySelector("td:nth-child(2)").textContent.trim();
-    oreValues[oreName] = parseInputToNumber(input.value);
-  });
-
-  // Добавляем вручную введённые минералы (если включены или редактируются)
-  document.querySelectorAll(".mineral-input").forEach(input => {
-    const row = input.closest("tr");
-    const mineralName = row.querySelector("td:nth-child(2)").textContent.trim();
-    const value = parseInputToNumber(input.value);
-    if (!isNaN(value)) {
-      oreValues[mineralName] = value;
-    }
-  });
-
-  return oreValues;
-}
-
-function getEfficiency(select) {
-  if (!select) return 1;
-  const value = select.value.replace('%', '');
-  return parseInt(value, 10) / 100;
-}
-
-function copyRowValue(name, input) {
-  const value = input.value;
-  const parsed = parseInputToNumber(value);
-  navigator.clipboard.writeText(`${formatNumberWithSpaces(parsed)}`);
-}
-
-function copyMaterialValue(name, outputSpan) {
-  const raw = outputSpan.dataset.raw || "0";
-  navigator.clipboard.writeText(`${formatNumberWithSpaces(raw)}`);
-}
-
+// Рецепты материалов
 const recipes = {
   "Электронные компоненты": { "Железная руда": 1, "Полиэлементная руда": 1, "Крокит": 1 },
   "Алюминий": { "Железная руда": 1, "Полиэлементная руда": 2, "Иридиум": 1 },
@@ -79,146 +15,185 @@ const recipes = {
   }
 };
 
-const conversionRates = {
-  "Железная руда": { "Митрацит": 4.4, "Иридиум": 4.4, "Крокит": 6.6, "Брадий": 22, "Титанит": 44 },
-  "Полиэлементная руда": { "Митрацит": 4.4, "Иридиум": 4.4, "Крокит": 6.6, "Брадий": 22, "Титанит": 44 },
-  "Полиорганическая руда": { "Митрацит": 4.4, "Иридиум": 4.4, "Крокит": 6.6, "Брадий": 22, "Титанит": 44 },
-  "Уран": { "Митрацит": 2.2, "Иридиум": 2.2, "Крокит": 3.3, "Брадий": 11, "Титанит": 22 }
+// Преобразования руды/урана в минералы (+10%)
+const oreConversions = {
+  "Титанит": { ore: "Железная руда", amount: 40 },
+  "Брадий": { ore: "Железная руда", amount: 20 },
+  "Крокит": { ore: "Железная руда", amount: 6 },
+  "Митрацит": { ore: "Железная руда", amount: 4 },
+  "Иридиум": { ore: "Железная руда", amount: 4 }
+};
+const uraniumConversions = {
+  "Митрацит": { amount: 2 },
+  "Иридиум": { amount: 2 },
+  "Крокит": { amount: 3 },
+  "Брадий": { amount: 10 },
+  "Титанит": { amount: 20 }
 };
 
-function updateMineralInputsState() {
-  const anyChecked = Array.from(document.querySelectorAll(".convert-checkbox"))
-    .some(cb => cb.checked);
+// Список базовых руд
+const baseOres = [
+  "Железная руда",
+  "Полиэлементная руда",
+  "Полиорганическая руда",
+  "Уран"
+];
 
-  document.querySelectorAll(".mineral-input").forEach(input => {
-    if (anyChecked) {
-      input.disabled = false;
-      if (input.value === "-" || input.value === "") input.value = "0";
-    } else {
-      input.value = "-";
-      input.disabled = true;
-    }
-  });
+// Получить потребности по рецепту
+function getRecipeNeeds(product, count) {
+  const recipe = recipes[product];
+  if (!recipe) return {};
+  const needs = {};
+  for (const [mat, qty] of Object.entries(recipe)) {
+    needs[mat] = (needs[mat] || 0) + qty * count;
+  }
+  return needs;
 }
 
-// Обновлённая функция calculateMaterials с правильным порядком расчёта и ограничением преобразования
+// Жадный расчёт максимального количества каждого материала из запасов
+function getMaxMaterialsFromStock(stock, conversions = {}) {
+  const result = {};
+  // Копируем запасы, чтобы не портить оригинал
+  let available = {...stock};
+
+  // Для каждого материала считаем, сколько можно сделать
+  Object.entries(recipes).forEach(([material, recipe]) => {
+    let canMake = Infinity;
+    // Для каждого ингредиента в рецепте
+    Object.entries(recipe).forEach(([mat, qty]) => {
+      let have = available[mat] || 0;
+      // Если минерал выбран для преобразования, добавляем к запасу то, что можно получить из руды/урана
+      if (conversions[mat]) {
+        have += conversions[mat];
+      }
+      canMake = Math.min(canMake, Math.floor(have / qty));
+    });
+    result[material] = canMake > 0 ? canMake : 0;
+    // После расчёта вычитаем использованные ресурсы
+    if (canMake > 0) {
+      Object.entries(recipe).forEach(([mat, qty]) => {
+        let used = qty * canMake;
+        if (available[mat] >= used) {
+          available[mat] -= used;
+        } else {
+          // Если часть минерала была преобразована, сначала тратим свой запас, потом преобразованный
+          let fromConversion = conversions[mat] || 0;
+          let needFromConversion = used - (available[mat] || 0);
+          available[mat] = 0;
+          conversions[mat] = Math.max(0, fromConversion - needFromConversion);
+        }
+      });
+    }
+  });
+  return result;
+}
+
+// Расчёт сколько минералов можно получить из руды/урана (по чекбоксам)
+function getConversionsFromInputs() {
+  // Пример: ищем чекбоксы и поля ввода преобразования
+  // Ожидается: <input type="checkbox" id="convert-Железная руда"> и <input id="convert-amount-Крокит">
+  const conversions = {};
+  Object.keys(oreConversions).concat(Object.keys(uraniumConversions)).forEach(mineral => {
+    const input = document.getElementById('convert-amount-' + mineral);
+    if (input && !isNaN(parseInt(input.value, 10))) {
+      conversions[mineral] = parseInt(input.value, 10) || 0;
+    }
+  });
+  // Преобразуем минералы в руду/уран для вычитания из запасов
+  const usedOres = {};
+  Object.entries(conversions).forEach(([mineral, amount]) => {
+    if (oreConversions[mineral]) {
+      const {ore, amount: orePerMineral} = oreConversions[mineral];
+      usedOres[ore] = (usedOres[ore] || 0) + Math.ceil(amount * orePerMineral * 1.1);
+    }
+    if (uraniumConversions[mineral]) {
+      usedOres["Уран"] = (usedOres["Уран"] || 0) + Math.ceil(amount * uraniumConversions[mineral].amount * 1.1);
+    }
+  });
+  return {conversions, usedOres};
+}
+
+// Основная функция расчёта
 function calculateMaterials() {
-  updateMineralInputsState();
-  const oreInputs = getOreValues();
-  const oreAvailable = { ...oreInputs };
-  const oreUsed = {};
+  // Получаем запасы пользователя
+  const userStock = {};
+  baseOres.concat(Object.keys(oreConversions)).forEach(mat => {
+    // id в разметке: stock-Железная-руда, stock-Полиэлементная-руда и т.д.
+    const id = 'stock-' + mat.replace(/ /g, '-');
+    const el = document.getElementById(id);
+    if (el) userStock[mat] = parseInt(el.value, 10) || 0;
+  });
+  userStock["Уран"] = parseInt(document.getElementById('stock-Уран')?.value, 10) || 0;
 
-  // 1. Преобразование руды / урана в минералы (раньше, чтобы учесть их при производстве)
-  document.querySelectorAll(".mineral-input").forEach(input => {
-    const row = input.closest("tr");
-    const mineralName = row.querySelector("td:nth-child(2)").textContent.trim();
-    const desired = parseInputToNumber(input.value);
-    let remaining = desired;
-    let convertedTotal = 0;
+  // Получаем преобразования из UI
+  const {conversions, usedOres} = getConversionsFromInputs();
 
-    for (const checkbox of document.querySelectorAll(".convert-checkbox:checked")) {
-      const base = checkbox.dataset.ore;
-      const rate = conversionRates[base]?.[mineralName];
-      if (!rate || oreAvailable[base] <= 0 || remaining <= 0) continue;
-
-      const possible = Math.floor(oreAvailable[base] / rate);
-      const toConvert = Math.min(possible, remaining);
-      if (toConvert > 0) {
-        oreUsed[base] = (oreUsed[base] || 0) + toConvert * rate;
-        oreAvailable[base] -= toConvert * rate;
-        convertedTotal += toConvert;
-        remaining -= toConvert;
-      }
-    }
-
-    const uraniumRate = conversionRates["Уран"]?.[mineralName];
-    if (uraniumRate && oreAvailable["Уран"] > 0 && remaining > 0) {
-      const possible = Math.floor(oreAvailable["Уран"] / uraniumRate);
-      const toConvert = Math.min(possible, remaining);
-      if (toConvert > 0) {
-        oreUsed["Уран"] = (oreUsed["Уран"] || 0) + toConvert * uraniumRate;
-        oreAvailable["Уран"] -= toConvert * uraniumRate;
-        convertedTotal += toConvert;
-        remaining -= toConvert;
-      }
-    }
-
-    // Автоматическое ограничение значения в поле
-    if (convertedTotal < desired) {
-      input.classList.add("red");
-      input.value = formatTrillions(convertedTotal);
-    } else {
-      input.classList.remove("red");
-    }
+  // Вычитаем руду/уран, потраченную на преобразования
+  const stockAfterConversion = {...userStock};
+  Object.entries(usedOres).forEach(([ore, used]) => {
+    stockAfterConversion[ore] = Math.max(0, (stockAfterConversion[ore] || 0) - used);
   });
 
-  // 2. Производство материалов (после преобразования минералов)
-  document.querySelectorAll("#right-block .material-output").forEach(output => {
-    const row = output.closest("tr");
-    const name = row.querySelector("td:nth-child(2)").textContent.trim();
-    const recipe = recipes[name];
-    const select = row.querySelector("select");
-    const efficiency = getEfficiency(select);
-    if (!recipe) return;
-
-    let maxPossible = Infinity;
-    for (const [res, amount] of Object.entries(recipe)) {
-      const available = oreAvailable[res] || 0;
-      maxPossible = Math.min(maxPossible, Math.floor(available / amount));
-    }
-
-    const result = Math.floor(maxPossible * efficiency);
-    output.dataset.raw = result;
-    output.textContent = formatTrillions(result);
-
-    for (const [res, amount] of Object.entries(recipe)) {
-      const used = amount * maxPossible;
-      oreUsed[res] = (oreUsed[res] || 0) + used;
-      oreAvailable[res] -= used;
-    }
+  // Добавляем преобразованные минералы к запасам
+  const mineralsFromConversion = {...conversions};
+  Object.keys(mineralsFromConversion).forEach(mineral => {
+    stockAfterConversion[mineral] = (stockAfterConversion[mineral] || 0) + mineralsFromConversion[mineral];
   });
 
-  // 3. Остатки
-  document.querySelectorAll(".left-remaining").forEach(span => {
-    const name = span.dataset.ore;
-    const left = Math.floor(oreAvailable[name] || 0);
-    if (left > 0) {
-      span.textContent = formatTrillions(left);
-      span.classList.add("red");
-    } else {
-      span.textContent = "-";
-      span.classList.remove("red");
+  // Считаем максимальное количество каждого материала
+  const maxMaterials = getMaxMaterialsFromStock(stockAfterConversion);
+
+  // Обновляем UI для материалов (нижняя таблица)
+  Object.keys(recipes).forEach(material => {
+    const el = document.getElementById('material-output-' + material.replace(/ /g, '-'));
+    if (el) {
+      el.textContent = maxMaterials[material] || 0;
+      el.setAttribute('data-raw', maxMaterials[material] || 0);
     }
   });
 }
 
-// Обновлённая removeRemainders с учётом ограничения доступного количества
-function removeRemainders() {
-  const oreInputs = getOreValues();
-
-  document.querySelectorAll(".left-remaining").forEach(span => {
-    const name = span.dataset.ore;
-    let left = parseInputToNumber(span.textContent);
-    if (left <= 0) return;
-
-    const row = span.closest("tr");
-    const convertInput = row.querySelector(".mineral-input");
-    const qtyInput = row.querySelector(".ore-input");
-
-    if (convertInput && !convertInput.disabled) {
-      let val = parseInputToNumber(convertInput.value);
-      const reduce = Math.min(left, val);
-      convertInput.value = formatTrillions(val - reduce);
-      left -= reduce;
-    }
-
-    if (left > 0 && qtyInput) {
-      let val = parseInputToNumber(qtyInput.value);
-      const reduce = Math.min(left, val);
-      qtyInput.value = formatTrillions(val - reduce);
-      left -= reduce;
-    }
+// Привязка событий
+function attachCalcListeners() {
+  // Привязываем к инпутам руды/минералов
+  document.querySelectorAll('.ore-input').forEach(el => {
+    el.addEventListener('input', () => {
+      calculateMaterials();
+    });
+    el.addEventListener('change', () => {
+      calculateMaterials();
+    });
   });
-
-  calculateMaterials();
+  // Привязываем к инпутам преобразования минералов
+  document.querySelectorAll('.mineral-input').forEach(el => {
+    el.addEventListener('input', () => {
+      calculateMaterials();
+    });
+    el.addEventListener('change', () => {
+      calculateMaterials();
+    });
+  });
+  // Привязываем к чекбоксам преобразования
+  document.querySelectorAll('.convert-checkbox').forEach(cb => {
+    cb.addEventListener('change', function() {
+      if (window.toggleMineralInputs) window.toggleMineralInputs(this.getAttribute('data-ore'));
+      calculateMaterials();
+    });
+  });
+  // Привязываем к кнопке "Убрать остатки"
+  const clearBtn = document.getElementById('clear-remainders');
+  if (clearBtn) clearBtn.addEventListener('click', function() {
+    if (window.clearRemainders) window.clearRemainders();
+    calculateMaterials();
+  });
 }
+
+// Форматирование ввода (пример)
+function formatLeftInputs() {
+  // ...реализуйте по необходимости...
+}
+
+// Экспортируем функции для index.html
+window.attachCalcListeners = attachCalcListeners;
+window.calculateMaterials = calculateMaterials;
+window.formatLeftInputs = formatLeftInputs;
