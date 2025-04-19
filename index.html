@@ -34,43 +34,40 @@
                 .then(html3 => {
                   // Вставляем exchange-block сразу после right-block
                   document.getElementById('exchange-block-placeholder').innerHTML = html3;
-                  // Добавьте этот код:
+
+                  // === ВАЖНО: инициализацию вызываем только после вставки exchange-block ===
+                  if (window.attachCalcListeners) window.attachCalcListeners();
+                  if (window.formatLeftInputs) window.formatLeftInputs();
+                  if (window.calculateMaterials) window.calculateMaterials();
+
+                  // Автоматически включаем/выключаем поля преобразования при изменении чекбоксов
+                  document.querySelectorAll('.convert-checkbox').forEach(cb => {
+                    cb.addEventListener('change', function() {
+                      if (window.toggleMineralInputs) window.toggleMineralInputs(this.getAttribute('data-ore'));
+                    });
+                  });
+                  // Пересчёт при изменении полей преобразования
+                  document.querySelectorAll('.mineral-input').forEach(inp => {
+                    inp.addEventListener('input', function() {
+                      if (window.calculateMaterials) window.calculateMaterials();
+                    });
+                  });
+                  // Пересчёт при изменении остатков (если потребуется)
                   document.getElementById('clear-remainders')?.addEventListener('click', function() {
                     if (window.clearRemainders) window.clearRemainders();
                   });
-                  // ...инициализация, если нужно...
+                  // Исправление: при копировании всегда брать data-raw (целое число)
+                  document.querySelectorAll('.copy-icon').forEach(icon => {
+                    icon.addEventListener('click', function() {
+                      const prev = this.previousElementSibling;
+                      if (prev && prev.classList.contains('material-output')) {
+                        // Для материалов копируем data-raw
+                        const raw = prev.getAttribute('data-raw');
+                        if (raw) navigator.clipboard.writeText(raw);
+                      }
+                    });
+                  });
                 });
-              // После загрузки блоков подключаем обработчики и расчёты
-              if (window.attachCalcListeners) window.attachCalcListeners();
-              if (window.formatLeftInputs) window.formatLeftInputs();
-              if (window.calculateMaterials) window.calculateMaterials();
-              // Автоматически включаем/выключаем поля преобразования при изменении чекбоксов
-              document.querySelectorAll('.convert-checkbox').forEach(cb => {
-                cb.addEventListener('change', function() {
-                  if (window.toggleMineralInputs) window.toggleMineralInputs(this.getAttribute('data-ore'));
-                });
-              });
-              // Пересчёт при изменении полей преобразования
-              document.querySelectorAll('.mineral-input').forEach(inp => {
-                inp.addEventListener('input', function() {
-                  if (window.calculateMaterials) window.calculateMaterials();
-                });
-              });
-              // Пересчёт при изменении остатков (если потребуется)
-              document.getElementById('clear-remainders')?.addEventListener('click', function() {
-                if (window.clearRemainders) window.clearRemainders();
-              });
-              // Исправление: при копировании всегда брать data-raw (целое число)
-              document.querySelectorAll('.copy-icon').forEach(icon => {
-                icon.addEventListener('click', function() {
-                  const prev = this.previousElementSibling;
-                  if (prev && prev.classList.contains('material-output')) {
-                    // Для материалов копируем data-raw
-                    const raw = prev.getAttribute('data-raw');
-                    if (raw) navigator.clipboard.writeText(raw);
-                  }
-                });
-              });
             });
         });
     });
