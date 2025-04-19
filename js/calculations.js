@@ -181,12 +181,19 @@ function formatNumber(num) {
   return Math.floor(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 }
 
-// Парсинг строки с "трлн" или пробелами в целое число
+// Парсинг строки с "трлн", "т", "к", "кк", "ккк" или пробелами в целое число
 function parseInputNumber(str) {
   if (typeof str !== "string") return 0;
   str = str.trim().replace(/\s+/g, ''); // удаляем все пробелы
   if (str === "") return 0;
-  // Считаем "трлн" и "т" (в любом месте после числа) как триллионы
+
+  // Унифицируем буквы: рус/англ
+  str = str
+    .replace(/trln/gi, 'трлн')
+    .replace(/t/gi, 'т')
+    .replace(/k/gi, 'к');
+
+  // "трлн" или "т" (триллионы)
   const trlnMatch = str.match(/^([\d.,]+)(т|трлн)$/i);
   if (trlnMatch) {
     let val = trlnMatch[1].replace(',', '.');
@@ -194,23 +201,68 @@ function parseInputNumber(str) {
     if (!isNaN(num)) return Math.round(num * 1_000_000_000_000);
     return 0;
   }
-  // Также поддержка, если пользователь написал "18 трлн" с пробелом
   if (str.toLowerCase().includes('трлн') || str.toLowerCase().endsWith('т')) {
     let val = str.replace(/трлн|т/gi, '').replace(',', '.');
     let num = parseFloat(val);
     if (!isNaN(num)) return Math.round(num * 1_000_000_000_000);
     return 0;
   }
+
+  // "ккк" (миллиард)
+  const kkkMatch = str.match(/^([\д.,]+)ккк$/i);
+  if (kkkMatch) {
+    let val = kkkMatch[1].replace(',', '.');
+    let num = parseFloat(val);
+    if (!isNaN(num)) return Math.round(num * 1_000_000_000);
+    return 0;
+  }
+  if (str.toLowerCase().endsWith('ккк')) {
+    let val = str.replace(/ккк/gi, '').replace(',', '.');
+    let num = parseFloat(val);
+    if (!isNaN(num)) return Math.round(num * 1_000_000_000);
+    return 0;
+  }
+
+  // "кк" (миллионы)
+  const kkMatch = str.match(/^([\д.,]+)кк$/i);
+  if (kkMatch) {
+    let val = kkMatch[1].replace(',', '.');
+    let num = parseFloat(val);
+    if (!isNaN(num)) return Math.round(num * 1_000_000);
+    return 0;
+  }
+  if (str.toLowerCase().endsWith('кк')) {
+    let val = str.replace(/кк/gi, '').replace(',', '.');
+    let num = parseFloat(val);
+    if (!isNaN(num)) return Math.round(num * 1_000_000);
+    return 0;
+  }
+
+  // "к" (тысячи)
+  const kMatch = str.match(/^([\д.,]+)к$/i);
+  if (kMatch) {
+    let val = kMatch[1].replace(',', '.');
+    let num = parseFloat(val);
+    if (!isNaN(num)) return Math.round(num * 1_000);
+    return 0;
+  }
+  if (str.toLowerCase().endsWith('к')) {
+    let val = str.replace(/к/gi, '').replace(',', '.');
+    let num = parseFloat(val);
+    if (!isNaN(num)) return Math.round(num * 1_000);
+    return 0;
+  }
+
+  // Обычное число
   return parseInt(str, 10) || 0;
 }
 
 // Форматирование ввода: разрешить только числа, пробелы, точку, запятую и "трлн", форматировать только при потере фокуса
 function formatLeftInputs() {
   document.querySelectorAll('.ore-input, .mineral-input').forEach(el => {
-    // Фильтрация ввода: только цифры, пробелы, точка, запятая, "трлн"
+    // Фильтрация ввода: только цифры, пробелы, точка, запятая, "трлн", "т", "к", "k", "t", "trln"
     el.addEventListener('input', function () {
-      // Оставляем только разрешённые символы
-      let filtered = this.value.replace(/[^0-9.,\sтрлн]/gi, '');
+      let filtered = this.value.replace(/[^0-9.,\sтрлнткkKТТLlNn]/gi, '');
       if (filtered !== this.value) {
         this.value = filtered;
       }
@@ -222,12 +274,11 @@ function formatLeftInputs() {
       this.value = formatNumber(val);
       this.title = val > 0 ? val.toLocaleString('ru-RU') : '';
     });
-    // При вставке из буфера: поддержка "17.646 трлн"
+    // При вставке из буфера: поддержка "17.646 трлн", "10kk", "10k", "10trln"
     el.addEventListener('paste', function (e) {
       e.preventDefault();
       let text = (e.clipboardData || window.clipboardData).getData('text');
-      // Оставляем только разрешённые символы
-      let filtered = text.replace(/[^0-9.,\sтрлн]/gi, '');
+      let filtered = text.replace(/[^0-9.,\sтрлнткkKТТLlNn]/gi, '');
       let val = parseInputNumber(filtered);
       this.value = formatNumber(val);
       this.title = val > 0 ? val.toLocaleString('ru-RU') : '';

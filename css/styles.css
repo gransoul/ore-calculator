@@ -77,5 +77,101 @@ input[type="checkbox"] {
 /* Вывод количества */
 .material-output {
   color: #00f7ff;
-  display: inline-block;
-  width: 80px; /* уменьшено с 100px */
+  font-size: 1em;
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  flex: 1 1 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+  transition: font-size 0.2s;
+}
+
+/* Автоматическое уменьшение размера шрифта для длинных чисел */
+.material-output:has(> span), .material-output {
+  font-size: clamp(0.7em, 1vw, 1em);
+}
+
+/* Числа в таблицах: уменьшенный размер, запрет переноса, авто-уменьшение */
+.material-output,
+td input[type="text"],
+td .copy-icon {
+  font-size: 1.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 110px;
+  vertical-align: middle;
+}
+
+td input[type="text"] {
+  font-size: 0.95em;
+  min-width: 60px;
+  max-width: 110px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+td {
+  /* Запретить перенос строк в ячейках */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Контейнер для числа и иконки */
+.material-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+  width: 100%;
+}
+
+/* Кнопка копирования — всегда справа, не сжимается */
+.copy-icon {
+  flex: 0 0 auto;
+  margin-left: 4px;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+}
+
+td {
+  display: table-cell;
+  vertical-align: inherit;
+}
+
+td .material-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+td .material-output {
+  color: #00f7ff;
+  font-size: 1em;
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  flex: 1 1 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+  transition: font-size 0.2s;
+}
+
+td .copy-icon {
+  flex: 0 0 auto;
+  margin-left: 4px;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+}
