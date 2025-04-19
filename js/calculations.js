@@ -466,8 +466,10 @@ function calculateMaterials() {
         leftNeed -= part;
       });
     }
-    // Добавляем минералы к запасу
-    available[mineral] = (available[mineral] || 0) + need;
+    // Добавляем минералы к запасу (перенесено до создания availableAfterConvert)
+    if (sources.length > 0 && need > 0) {
+      available[mineral] = (available[mineral] || 0) + need;
+    }
   });
 
   // После преобразования: второй проход по производству материалов из новых минералов
@@ -491,31 +493,34 @@ function calculateMaterials() {
   });
 
   // --- Шаг 3. Остатки ---
-  // Остатки = что осталось после производства материалов и преобразования
   ores.concat(minerals).forEach(mat => {
     const leftSpan = document.getElementById('left-' + mat.replace(/ /g, '-'));
     let left = availableAfterConvert[mat] || 0;
     if (leftSpan) {
-      leftSpan.textContent = left > 0 ? formatNumber(left) : '-';
-      leftSpan.setAttribute('data-raw', left);
-      leftSpan.title = left > 0 ? left.toLocaleString('ru-RU') : '';
-      // Подсветка: если руда не может быть преобразована (чекбокс выключен) и осталась — красная
+      // UX: title с предупреждением если чекбокс снят
       if (ores.includes(mat) && !enabledConvert[mat] && left > 0) {
+        leftSpan.title = "Осталась руда, но чекбокс не активен — не переработается!";
         leftSpan.style.color = 'red';
+      } else if (left > 0) {
+        leftSpan.title = left.toLocaleString('ru-RU');
+        leftSpan.style.color = '';
       } else {
+        leftSpan.title = '';
         leftSpan.style.color = '';
       }
+      leftSpan.textContent = left > 0 ? formatNumber(left) : '-';
+      leftSpan.setAttribute('data-raw', left);
     }
   });
 
   // --- Обновляем UI для материалов (нижняя таблица) ---
   Object.keys(recipes).forEach(material => {
+    const total = (producedMaterials[material] || 0) + (producedMaterials2[material] || 0);
     const el = document.getElementById('material-output-' + material.replace(/ /g, '-'));
     if (el) {
-      const val = producedMaterials2[material] || 0;
-      el.textContent = formatNumber(val);
-      el.setAttribute('data-raw', val);
-      el.title = val > 0 ? val.toLocaleString('ru-RU') : '';
+      el.textContent = formatNumber(total);
+      el.setAttribute('data-raw', total);
+      el.title = total > 0 ? total.toLocaleString('ru-RU') : '';
     }
   });
 
@@ -538,7 +543,14 @@ function clearRemainders() {
     const convertInput = document.getElementById('convert-amount-' + mineral);
     if (convertInput && remainders[mineral] > 0) {
       let prev = parseInputNumber(convertInput.value);
-      convertInput.value = shortNumber(prev + remainders[mineral]);
+      let max = parseInt(convertInput.max, 10);
+      if (isNaN(max)) max = Infinity;
+      let sum = prev + remainders[mineral];
+      if (sum > max) {
+        convertInput.value = shortNumber(max);
+      } else {
+        convertInput.value = shortNumber(sum);
+      }
     }
   });
 
