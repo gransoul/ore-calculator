@@ -94,13 +94,11 @@ function getMaxMaterialsFromStock(stock, conversions = {}) {
 
 // Расчёт сколько минералов можно получить из руды/урана (по чекбоксам)
 function getConversionsFromInputs() {
-  // Пример: ищем чекбоксы и поля ввода преобразования
-  // Ожидается: <input type="checkbox" id="convert-Железная руда"> и <input id="convert-amount-Крокит">
   const conversions = {};
   Object.keys(oreConversions).concat(Object.keys(uraniumConversions)).forEach(mineral => {
     const input = document.getElementById('convert-amount-' + mineral);
-    if (input && !isNaN(parseInt(input.value, 10))) {
-      conversions[mineral] = parseInt(input.value, 10) || 0;
+    if (input) {
+      conversions[mineral] = parseInputNumber(input.value);
     }
   });
   // Преобразуем минералы в руду/уран для вычитания из запасов
@@ -119,20 +117,19 @@ function getConversionsFromInputs() {
 
 // Подсчёт максимального количества минералов, которые можно преобразовать из руды/урана
 function updateConverterLimits() {
-  // Для каждого минерала, который можно получить из руды/урана
   Object.keys(oreConversions).concat(Object.keys(uraniumConversions)).forEach(mineral => {
     let maxFromOre = 0, maxFromUran = 0;
     // Из руды
     if (oreConversions[mineral]) {
       const {ore, amount: orePerMineral} = oreConversions[mineral];
       const oreInput = document.getElementById('stock-' + ore.replace(/ /g, '-'));
-      let oreHave = oreInput ? parseInt(oreInput.value, 10) || 0 : 0;
+      let oreHave = oreInput ? parseInputNumber(oreInput.value) : 0;
       maxFromOre = Math.floor(oreHave / (orePerMineral * 1.1));
     }
     // Из урана
     if (uraniumConversions[mineral]) {
       const uraniumInput = document.getElementById('stock-Уран');
-      let uraniumHave = uraniumInput ? parseInt(uraniumInput.value, 10) || 0 : 0;
+      let uraniumHave = uraniumInput ? parseInputNumber(uraniumInput.value) : 0;
       maxFromUran = Math.floor(uraniumHave / (uraniumConversions[mineral].amount * 1.1));
     }
     // Итоговый максимум — сумма обоих способов
@@ -142,7 +139,7 @@ function updateConverterLimits() {
     if (input) {
       input.max = max;
       // Если текущее значение больше максимума — ограничить
-      if (parseInt(input.value, 10) > max) input.value = max;
+      if (parseInputNumber(input.value) > max) input.value = formatNumber(max);
     }
     // Можно добавить отображение максимума (если есть отдельный элемент)
     const maxSpan = document.getElementById('max-convert-' + mineral);
@@ -170,17 +167,86 @@ function toggleMineralInputs(oreName) {
   });
 }
 
+// Форматирование чисел с пробелами и сокращением до трлн (с учётом .000 → .0)
+function formatNumber(num) {
+  num = typeof num === "string" ? parseInputNumber(num) : num;
+  if (!isFinite(num) || isNaN(num)) return "0";
+  if (num >= 1_000_000_000_000) {
+    let trillions = num / 1_000_000_000_000;
+    // Если дробная часть .000, .100, .200 и т.д. — показываем 1 знак, иначе до 3 знаков
+    let fixed = (trillions * 1000) % 10 === 0 ? 1 : 3;
+    let str = trillions.toFixed(fixed).replace(/\.?0+$/, '');
+    return str + ' трлн';
+  }
+  return Math.floor(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}
+
+// Парсинг строки с "трлн" или пробелами в целое число
+function parseInputNumber(str) {
+  if (typeof str !== "string") return 0;
+  str = str.trim().replace(/\s+/g, ''); // удаляем все пробелы
+  if (str === "") return 0;
+  // Считаем "трлн" и "т" (в любом месте после числа) как триллионы
+  const trlnMatch = str.match(/^([\d.,]+)(т|трлн)$/i);
+  if (trlnMatch) {
+    let val = trlnMatch[1].replace(',', '.');
+    let num = parseFloat(val);
+    if (!isNaN(num)) return Math.round(num * 1_000_000_000_000);
+    return 0;
+  }
+  // Также поддержка, если пользователь написал "18 трлн" с пробелом
+  if (str.toLowerCase().includes('трлн') || str.toLowerCase().endsWith('т')) {
+    let val = str.replace(/трлн|т/gi, '').replace(',', '.');
+    let num = parseFloat(val);
+    if (!isNaN(num)) return Math.round(num * 1_000_000_000_000);
+    return 0;
+  }
+  return parseInt(str, 10) || 0;
+}
+
+// Форматирование ввода: разрешить только числа, пробелы, точку, запятую и "трлн", форматировать только при потере фокуса
+function formatLeftInputs() {
+  document.querySelectorAll('.ore-input, .mineral-input').forEach(el => {
+    // Фильтрация ввода: только цифры, пробелы, точка, запятая, "трлн"
+    el.addEventListener('input', function () {
+      // Оставляем только разрешённые символы
+      let filtered = this.value.replace(/[^0-9.,\sтрлн]/gi, '');
+      if (filtered !== this.value) {
+        this.value = filtered;
+      }
+    });
+    // При потере фокуса — форматируем
+    el.addEventListener('blur', function () {
+      let val = parseInputNumber(this.value);
+      if (isNaN(val)) return;
+      this.value = formatNumber(val);
+      this.title = val > 0 ? val.toLocaleString('ru-RU') : '';
+    });
+    // При вставке из буфера: поддержка "17.646 трлн"
+    el.addEventListener('paste', function (e) {
+      e.preventDefault();
+      let text = (e.clipboardData || window.clipboardData).getData('text');
+      // Оставляем только разрешённые символы
+      let filtered = text.replace(/[^0-9.,\sтрлн]/gi, '');
+      let val = parseInputNumber(filtered);
+      this.value = formatNumber(val);
+      this.title = val > 0 ? val.toLocaleString('ru-RU') : '';
+      if (typeof calculateMaterials === "function") calculateMaterials();
+      if (typeof updateConverterLimits === "function") updateConverterLimits();
+    });
+  });
+}
+
 // Основная функция расчёта
 function calculateMaterials() {
   // Получаем запасы пользователя
   const userStock = {};
   baseOres.concat(Object.keys(oreConversions)).forEach(mat => {
-    // id в разметке: stock-Железная-руда, stock-Полиэлементная-руда и т.д.
     const id = 'stock-' + mat.replace(/ /g, '-');
     const el = document.getElementById(id);
-    if (el) userStock[mat] = parseInt(el.value, 10) || 0;
+    if (el) userStock[mat] = parseInputNumber(el.value);
   });
-  userStock["Уран"] = parseInt(document.getElementById('stock-Уран')?.value, 10) || 0;
+  userStock["Уран"] = parseInputNumber(document.getElementById('stock-Уран')?.value);
 
   // Получаем преобразования из UI
   const {conversions, usedOres} = getConversionsFromInputs();
@@ -200,41 +266,42 @@ function calculateMaterials() {
   // Считаем максимальное количество каждого материала
   const maxMaterials = getMaxMaterialsFromStock(stockAfterConversion);
 
+  // После расчёта maxMaterials
+  const actuallyUsed = {};
+  Object.entries(recipes).forEach(([material, recipe]) => {
+    const count = maxMaterials[material] || 0;
+    Object.entries(recipe).forEach(([mat, qty]) => {
+      actuallyUsed[mat] = (actuallyUsed[mat] || 0) + qty * count;
+    });
+  });
+  Object.entries(usedOres).forEach(([mat, qty]) => {
+    actuallyUsed[mat] = (actuallyUsed[mat] || 0) + qty;
+  });
+
+  // === Обновляем остатки руды и минералов ===
+  baseOres.concat(Object.keys(oreConversions), Object.keys(uraniumConversions)).forEach(mat => {
+    const id = 'stock-' + mat.replace(/ /g, '-');
+    const el = document.getElementById(id);
+    let start = el ? parseInputNumber(el.value) : 0;
+    let left = Math.max(0, start - (actuallyUsed[mat] || 0));
+    let leftSpan = document.getElementById('left-' + mat.replace(/ /g, '-'));
+    if (leftSpan) {
+      leftSpan.textContent = left > 0 ? formatNumber(left) : '-';
+      leftSpan.setAttribute('data-raw', left);
+      leftSpan.title = left > 0 ? left.toLocaleString('ru-RU') : '';
+      leftSpan.style.color = left > 0 ? 'red' : '';
+    }
+  });
+
   // Обновляем UI для материалов (нижняя таблица)
   Object.keys(recipes).forEach(material => {
     const el = document.getElementById('material-output-' + material.replace(/ /g, '-'));
     if (el) {
-      el.textContent = maxMaterials[material] || 0;
-      el.setAttribute('data-raw', maxMaterials[material] || 0);
+      const val = maxMaterials[material] || 0;
+      el.textContent = formatNumber(val);
+      el.setAttribute('data-raw', val);
+      el.title = val > 0 ? val.toLocaleString('ru-RU') : '';
     }
-  });
-
-  // === Обновляем остатки руды и минералов ===
-  // Остатки = stockAfterConversion - всё что пошло на материалы
-  // Для этого пересчитаем, сколько реально потрачено на материалы
-  let used = {};
-  Object.entries(recipes).forEach(([material, recipe]) => {
-    let count = maxMaterials[material] || 0;
-    Object.entries(recipe).forEach(([mat, qty]) => {
-      used[mat] = (used[mat] || 0) + qty * count;
-    });
-  });
-  // Добавим потраченное на преобразования
-  Object.entries(usedOres).forEach(([ore, val]) => {
-    used[ore] = (used[ore] || 0) + val;
-  });
-
-  // Остатки = изначальный ввод - использовано (или 0, если ушло всё)
-  baseOres.concat(Object.keys(oreConversions), Object.keys(uraniumConversions)).forEach(mat => {
-    const id = 'stock-' + mat.replace(/ /g, '-');
-    const el = document.getElementById(id);
-    let start = el ? parseInt(el.value, 10) || 0 : 0;
-    let left = Math.max(0, start - (used[mat] || 0));
-    // Обновляем остатки в left-block (если есть)
-    let leftSpan = document.getElementById('left-' + mat.replace(/ /g, '-'));
-    if (leftSpan) leftSpan.textContent = left > 0 ? left : '-';
-    // Можно добавить подсветку если есть остаток
-    if (leftSpan) leftSpan.style.color = left > 0 ? 'red' : '';
   });
 
   updateConverterLimits();
@@ -242,29 +309,23 @@ function calculateMaterials() {
 
 // Очистка остатков: переносит остатки в поля преобразования и уменьшает количество руды/минералов
 function clearRemainders() {
-  // Для каждой строки остатков
   baseOres.concat(Object.keys(oreConversions), Object.keys(uraniumConversions)).forEach(mat => {
     const leftSpan = document.getElementById('left-' + mat.replace(/ /g, '-'));
     const stockInput = document.getElementById('stock-' + mat.replace(/ /g, '-'));
     if (!leftSpan || !stockInput) return;
-    let left = parseInt(leftSpan.textContent, 10) || 0;
+    let left = parseInputNumber(leftSpan.textContent);
     if (left > 0) {
-      // Найти поле преобразования для этого минерала (если есть)
       const convertInput = document.getElementById('convert-amount-' + mat);
       if (convertInput) {
-        // Прибавить остаток к полю преобразования
-        let prev = parseInt(convertInput.value, 10) || 0;
-        convertInput.value = prev + left;
+        let prev = parseInputNumber(convertInput.value);
+        convertInput.value = formatNumber(prev + left);
       }
-      // Уменьшить количество в поле ввода руды/минерала
-      let current = parseInt(stockInput.value, 10) || 0;
-      stockInput.value = Math.max(0, current - left);
-      // Обнулить остаток
+      let current = parseInputNumber(stockInput.value);
+      stockInput.value = formatNumber(Math.max(0, current - left));
       leftSpan.textContent = '-';
       leftSpan.style.color = '';
     }
   });
-  // Пересчитать всё заново
   calculateMaterials();
 }
 
@@ -272,12 +333,11 @@ function clearRemainders() {
 function copyRowValue(name, inputEl) {
   let value = "";
   if (inputEl && inputEl.value !== undefined) {
-    value = inputEl.value;
+    value = parseInputNumber(inputEl.value);
   } else {
-    // Если передан не input, ищем input по id
     const id = 'stock-' + name.replace(/ /g, '-');
     const el = document.getElementById(id);
-    if (el) value = el.value;
+    if (el) value = parseInputNumber(el.value);
   }
   if (value !== undefined && value !== null) {
     navigator.clipboard.writeText(value.toString());
@@ -288,12 +348,11 @@ function copyRowValue(name, inputEl) {
 function copyMaterialValue(name, spanEl) {
   let value = "";
   if (spanEl && spanEl.textContent !== undefined) {
-    value = spanEl.textContent;
+    value = parseInputNumber(spanEl.textContent);
   } else {
-    // Если передан не span, ищем по id
     const id = 'material-output-' + name.replace(/ /g, '-');
     const el = document.getElementById(id);
-    if (el) value = el.textContent;
+    if (el) value = parseInputNumber(el.textContent);
   }
   if (value !== undefined && value !== null) {
     navigator.clipboard.writeText(value.toString());
@@ -339,11 +398,6 @@ function attachCalcListeners() {
     calculateMaterials();
     updateConverterLimits();
   });
-}
-
-// Форматирование ввода (пример)
-function formatLeftInputs() {
-  // ...реализуйте по необходимости...
 }
 
 // Экспортируем функции для index.html
