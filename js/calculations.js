@@ -460,3 +460,6 @@ window.updateConverterLimits = updateConverterLimits;
 window.toggleMineralInputs = toggleMineralInputs;
 window.copyRowValue = copyRowValue;
 window.copyMaterialValue = copyMaterialValue;
+
+// Обновление блока обмена
+document.getElementById('exchange-block-placeholder').innerHTML = html3;

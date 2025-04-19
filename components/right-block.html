@@ -2,8 +2,10 @@
   <table>
     <thead>
       <tr>
-        <th colspan="2">Материалы</th>
+        <th> </th>
+        <th>Материалы</th>
         <th>Количество</th>
+        <th class="copy-cell"></th>
       </tr>
     </thead>
     <tbody>
@@ -12,7 +14,11 @@
         <td>Электронные компоненты</td>
         <td>
           <span class="material-output" id="material-output-Электронные-компоненты" data-raw="0">0</span>
-          <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyMaterialValue('Электронные компоненты', this.previousElementSibling)">
+        </td>
+        <td class="copy-cell">
+          <div class="material-cell">
+            <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyMaterialValue('Электронные компоненты', document.getElementById('material-output-Электронные-компоненты'))">
+          </div>
         </td>
       </tr>
       <tr>
@@ -20,7 +26,11 @@
         <td>Алюминий</td>
         <td>
           <span class="material-output" id="material-output-Алюминий" data-raw="0">0</span>
-          <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyMaterialValue('Алюминий', this.previousElementSibling)">
+        </td>
+        <td class="copy-cell">
+          <div class="material-cell">
+            <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyMaterialValue('Алюминий', document.getElementById('material-output-Алюминий'))">
+          </div>
         </td>
       </tr>
       <tr>
@@ -28,7 +38,11 @@
         <td>Сталь</td>
         <td>
           <span class="material-output" id="material-output-Сталь" data-raw="0">0</span>
-          <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyMaterialValue('Сталь', this.previousElementSibling)">
+        </td>
+        <td class="copy-cell">
+          <div class="material-cell">
+            <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyMaterialValue('Сталь', document.getElementById('material-output-Сталь'))">
+          </div>
         </td>
       </tr>
       <tr>
@@ -36,7 +50,11 @@
         <td>Титановый сплав</td>
         <td>
           <span class="material-output" id="material-output-Титановый-сплав" data-raw="0">0</span>
-          <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyMaterialValue('Титановый сплав', this.previousElementSibling)">
+        </td>
+        <td class="copy-cell">
+          <div class="material-cell">
+            <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyMaterialValue('Титановый сплав', document.getElementById('material-output-Титановый-сплав'))">
+          </div>
         </td>
       </tr>
       <tr>
@@ -44,7 +62,11 @@
         <td>Нановолокно</td>
         <td>
           <span class="material-output" id="material-output-Нановолокно" data-raw="0">0</span>
-          <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyMaterialValue('Нановолокно', this.previousElementSibling)">
+        </td>
+        <td class="copy-cell">
+          <div class="material-cell">
+            <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyMaterialValue('Нановолокно', document.getElementById('material-output-Нановолокно'))">
+          </div>
         </td>
       </tr>
       <tr>
@@ -52,7 +74,11 @@
         <td>Полимеры</td>
         <td>
           <span class="material-output" id="material-output-Полимеры" data-raw="0">0</span>
-          <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyMaterialValue('Полимеры', this.previousElementSibling)">
+        </td>
+        <td class="copy-cell">
+          <div class="material-cell">
+            <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyMaterialValue('Полимеры', document.getElementById('material-output-Полимеры'))">
+          </div>
         </td>
       </tr>
       <tr>
@@ -60,10 +86,13 @@
         <td>Композиты</td>
         <td>
           <span class="material-output" id="material-output-Композиты" data-raw="0">0</span>
-          <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyMaterialValue('Композиты', this.previousElementSibling)">
+        </td>
+        <td class="copy-cell">
+          <div class="material-cell">
+            <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyMaterialValue('Композиты', document.getElementById('material-output-Композиты'))">
+          </div>
         </td>
       </tr>
     </tbody>
   </table>
-  <button id="clear-remainders">Убрать остатки</button>
 </div>

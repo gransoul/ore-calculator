@@ -1,8 +1,10 @@
 <table>
   <thead>
     <tr>
-      <th colspan="2">Руда / Минералы</th>
+      <th></th>
+      <th>Руда / Минералы</th>
       <th>Количество</th>
+      <th class="copy-cell"></th>
       <th>Преобразовать</th>
       <th>Остатки</th>
     </tr>
@@ -14,8 +16,12 @@
       <td><img class="icon" src="images/productions/1-16.png"></td>
       <td>Железная руда</td>
       <td>
-        <input class="ore-input" id="stock-Железная-руда" type="text" value="0">
-        <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Железная руда', this.previousElementSibling)">
+        <div class="material-cell" style="justify-content: center;">
+          <input class="ore-input" id="stock-Железная-руда" type="text" value="0">
+        </div>
+      </td>
+      <td class="copy-cell">
+        <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Железная руда', document.getElementById('stock-Железная-руда'))">
       </td>
       <td>
         <input type="checkbox" class="convert-checkbox" id="convert-Железная-руда" data-ore="Железная руда" onchange="toggleMineralInputs('Железная руда')">
@@ -30,8 +36,12 @@
       <td><img class="icon" src="images/productions/2-16.png"></td>
       <td>Полиэлементная руда</td>
       <td>
-        <input class="ore-input" id="stock-Полиэлементная-руда" type="text" value="0">
-        <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Полиэлементная руда', this.previousElementSibling)">
+        <div class="material-cell" style="justify-content: center;">
+          <input class="ore-input" id="stock-Полиэлементная-руда" type="text" value="0">
+        </div>
+      </td>
+      <td class="copy-cell">
+        <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Полиэлементная руда', document.getElementById('stock-Полиэлементная-руда'))">
       </td>
       <td>
         <input type="checkbox" class="convert-checkbox" id="convert-Полиэлементная-руда" data-ore="Полиэлементная руда" onchange="toggleMineralInputs('Полиэлементная руда')">
@@ -46,8 +56,12 @@
       <td><img class="icon" src="images/productions/3-16.png"></td>
       <td>Полиорганическая руда</td>
       <td>
-        <input class="ore-input" id="stock-Полиорганическая-руда" type="text" value="0">
-        <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Полиорганическая руда', this.previousElementSibling)">
+        <div class="material-cell" style="justify-content: center;">
+          <input class="ore-input" id="stock-Полиорганическая-руда" type="text" value="0">
+        </div>
+      </td>
+      <td class="copy-cell">
+        <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Полиорганическая руда', document.getElementById('stock-Полиорганическая-руда'))">
       </td>
       <td>
         <input type="checkbox" class="convert-checkbox" id="convert-Полиорганическая-руда" data-ore="Полиорганическая руда" onchange="toggleMineralInputs('Полиорганическая руда')">
@@ -62,8 +76,12 @@
       <td><img class="icon" src="images/productions/4-16.png"></td>
       <td>Уран</td>
       <td>
-        <input class="ore-input" id="stock-Уран" type="text" value="0">
-        <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Уран', this.previousElementSibling)">
+        <div class="material-cell" style="justify-content: center;">
+          <input class="ore-input" id="stock-Уран" type="text" value="0">
+        </div>
+      </td>
+      <td class="copy-cell">
+        <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Уран', document.getElementById('stock-Уран'))">
       </td>
       <td>
         <input type="checkbox" class="convert-checkbox" id="convert-Уран" data-ore="Уран" onchange="toggleMineralInputs('Уран')">
@@ -75,7 +93,7 @@
 
     <!-- Пустая строка -->
     <tr>
-      <td colspan="5">
+      <td colspan="6">
         <div style="height: 12px; width: 50%; margin: auto;"></div>
       </td>
     </tr>
@@ -85,8 +103,12 @@
       <td><img class="icon" src="images/productions/5-16.png"></td>
       <td>Митрацит</td>
       <td>
-        <input class="ore-input" id="stock-Митрацит" type="text" value="0">
-        <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Митрацит', this.previousElementSibling)">
+        <div class="material-cell" style="justify-content: center;">
+          <input class="ore-input" id="stock-Митрацит" type="text" value="0">
+        </div>
+      </td>
+      <td class="copy-cell">
+        <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Митрацит', document.getElementById('stock-Митрацит'))">
       </td>
       <td>
         <input class="mineral-input" id="convert-amount-Митрацит" type="text" value="0" disabled>
@@ -101,8 +123,12 @@
       <td><img class="icon" src="images/productions/6-16.png"></td>
       <td>Иридиум</td>
       <td>
-        <input class="ore-input" id="stock-Иридиум" type="text" value="0">
-        <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Иридиум', this.previousElementSibling)">
+        <div class="material-cell" style="justify-content: center;">
+          <input class="ore-input" id="stock-Иридиум" type="text" value="0">
+        </div>
+      </td>
+      <td class="copy-cell">
+        <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Иридиум', document.getElementById('stock-Иридиум'))">
       </td>
       <td>
         <input class="mineral-input" id="convert-amount-Иридиум" type="text" value="0" disabled>
@@ -117,8 +143,12 @@
       <td><img class="icon" src="images/productions/7-16.png"></td>
       <td>Крокит</td>
       <td>
-        <input class="ore-input" id="stock-Крокит" type="text" value="0">
-        <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Крокит', this.previousElementSibling)">
+        <div class="material-cell" style="justify-content: center;">
+          <input class="ore-input" id="stock-Крокит" type="text" value="0">
+        </div>
+      </td>
+      <td class="copy-cell">
+        <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Крокит', document.getElementById('stock-Крокит'))">
       </td>
       <td>
         <input class="mineral-input" id="convert-amount-Крокит" type="text" value="0" disabled>
@@ -133,8 +163,12 @@
       <td><img class="icon" src="images/productions/8-16.png"></td>
       <td>Брадий</td>
       <td>
-        <input class="ore-input" id="stock-Брадий" type="text" value="0">
-        <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Брадий', this.previousElementSibling)">
+        <div class="material-cell" style="justify-content: center;">
+          <input class="ore-input" id="stock-Брадий" type="text" value="0">
+        </div>
+      </td>
+      <td class="copy-cell">
+        <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Брадий', document.getElementById('stock-Брадий'))">
       </td>
       <td>
         <input class="mineral-input" id="convert-amount-Брадий" type="text" value="0" disabled>
@@ -149,8 +183,12 @@
       <td><img class="icon" src="images/productions/9-16.png"></td>
       <td>Титанит</td>
       <td>
-        <input class="ore-input" id="stock-Титанит" type="text" value="0">
-        <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Титанит', this.previousElementSibling)">
+        <div class="material-cell" style="justify-content: center;">
+          <input class="ore-input" id="stock-Титанит" type="text" value="0">
+        </div>
+      </td>
+      <td class="copy-cell">
+        <img class="copy-icon" src="images/productions/i-copy-16.png" onclick="copyRowValue('Титанит', document.getElementById('stock-Титанит'))">
       </td>
       <td>
         <input class="mineral-input" id="convert-amount-Титанит" type="text" value="0" disabled>

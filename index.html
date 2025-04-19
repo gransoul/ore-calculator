@@ -11,7 +11,11 @@
 
   <div class="container">
     <div class="block" id="left-block"></div>
-    <div class="block" id="right-block"></div>
+    <div class="right-column">
+      <div class="block" id="right-block"></div>
+      <!-- exchange-block будет вставляться сюда -->
+      <div id="exchange-block-placeholder"></div>
+    </div>
   </div>
 
   <script>
@@ -24,6 +28,18 @@
             .then(res => res.text())
             .then(html2 => {
               document.getElementById('right-block').innerHTML = html2;
+              // После загрузки правого блока — подгружаем exchange-block
+              fetch('components/exchange-block.html')
+                .then(res => res.text())
+                .then(html3 => {
+                  // Вставляем exchange-block сразу после right-block
+                  document.getElementById('exchange-block-placeholder').innerHTML = html3;
+                  // Добавьте этот код:
+                  document.getElementById('clear-remainders')?.addEventListener('click', function() {
+                    if (window.clearRemainders) window.clearRemainders();
+                  });
+                  // ...инициализация, если нужно...
+                });
               // После загрузки блоков подключаем обработчики и расчёты
               if (window.attachCalcListeners) window.attachCalcListeners();
               if (window.formatLeftInputs) window.formatLeftInputs();
